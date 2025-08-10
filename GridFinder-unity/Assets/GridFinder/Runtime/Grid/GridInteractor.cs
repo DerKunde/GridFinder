@@ -9,8 +9,6 @@ using UnityEngine.InputSystem;
 
 namespace GridFinder.Runtime.Grid
 {
-
-
     [RequireComponent(typeof(GridRuntime))]
     public class GridInteractor : MonoBehaviour
     {
