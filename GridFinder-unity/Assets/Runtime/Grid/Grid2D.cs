@@ -1,7 +1,7 @@
 using Runtime.Grid;
 using UnityEngine;
 
-public class Grid2D : ICostProvider
+public class Grid2D : ICostProvider, IGridReadOnly
 {
     [SerializeField] private int width;
     [SerializeField] private int height;
@@ -32,6 +32,7 @@ public class Grid2D : ICostProvider
     public int Width => width;
     public int Height => height;
     public float CellSize => cellSize;
+    public System.Numerics.Vector2 OriginWorld => new(originWorld.x, originWorld.y);
 
     public bool InBounds(int x, int y)
     {
@@ -43,7 +44,7 @@ public class Grid2D : ICostProvider
         return y * width + x;
     }
 
-    public void SetBlock(int x, int y, bool blocked)
+    public void SetBlocked(int x, int y, bool blocked)
     {
         if(InBounds(x, y)) return;
         costs[Index(x,y)] = blocked ? byte.MaxValue : (byte)10;

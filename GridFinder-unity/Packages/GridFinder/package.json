@@ -1,0 +1,26 @@
+{
+  "name": "com.messydeskstudios.gridfinder",
+  "displayName": "GridFinder",
+  "version": "0.1.0",
+  "unity": "6000.0",
+  "description": "Grid-basiertes Pathfinding (Flow Fields + A*) für Massenszenen (8000+ Agents). Inklusive Visualisierung, Facilities und Zonen.",
+  "keywords": [
+    "pathfinding",
+    "grid",
+    "navigation",
+    "flow-field",
+    "a*",
+    "ai"
+  ],
+  "category": "AI",
+  "author": {
+    "name": "MessyDeskStudios"
+  },
+  "samples": [
+    {
+      "displayName": "Minimal Demo",
+      "description": "Beispielszenen und Skripte zum schnellen Start (Grid, Visualizer, simple Agents).",
+      "path": "Samples~/MinimalDemo"
+    }
+  ]
+}
