@@ -1,10 +1,10 @@
 // Runtime/Visualization/GridTextureVisualizer.cs
+
 using System;
 using Runtime.Grid;
 using UnityEngine;
-using Visualization;
 
-namespace GridPF.Visualization
+namespace Visualization
 {
     [ExecuteAlways]
     public class GridTextureVisualizer : MonoBehaviour, IGridVisualizer
