@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using GridFinder.Structs;
+using Unity.Entities;
+using Unity.Mathematics;
+using UnityEngine;
 
 namespace GridFinder.Runtime.Mono
 {
@@ -9,11 +12,18 @@ namespace GridFinder.Runtime.Mono
         public ushort zoneId;
         public byte colorIdx;
 
-        
-    }
-    
-    protected class Baker : Baker<PaintCommandAuthoring>
-    {
-    
+        class Baker : Baker<PaintCommandAuthoring>
+        {
+            public override void Bake(PaintCommandAuthoring authoring)
+            {
+                var entity = GetEntity(TransformUsageFlags.None);
+                AddComponent(entity, new PaintCommand {
+                    Min = new int2(authoring.min.x, authoring.min.y),
+                    Max = new int2(authoring.max.x, authoring.max.y),
+                    ZoneId = authoring.zoneId,
+                    ColorIdx = authoring.colorIdx
+                });
+            }
+        }
     }
 }

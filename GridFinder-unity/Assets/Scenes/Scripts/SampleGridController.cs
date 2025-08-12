@@ -1,4 +1,6 @@
 using System;
+using GridFinder.Runtime.Grid;
+using GridFinder.Runtime.Mono;
 using UnityEngine;
 using Unity.Mathematics;
 using UnityEngine.EventSystems;
@@ -11,6 +13,7 @@ namespace GridFinder.Samples
         [Header("Grid")]
         [Min(2)] public int cols = 32;
         [Min(2)] public int rows = 32;
+        public int chunkSize = 8;
         [Min(0.1f)] public float cellSize = 1f;
         public float zOffset = 0f; // Grid liegt in X/Y bei Z=zOffset
 
@@ -28,6 +31,9 @@ namespace GridFinder.Samples
 
         void Awake()
         {
+            
+            var grid = GridFactory.CreateUniform(cols, rows, chunkSize, defaultCell: Cell.Default);
+            Debug.Log(grid.ChunkSize + "I am here");
             _cam = Camera.main;
             if (_cam == null)
             {

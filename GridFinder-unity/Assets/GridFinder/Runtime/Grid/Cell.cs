@@ -17,7 +17,8 @@ namespace GridFinder.Runtime.Grid
         
         public const int BIT_WALKABLE   = 0;
         public const int BIT_RESERVED   = 1;
-        public const int SHIFT_COLORIDX = 2;
+        public const int BIT_BLOCKED    = 2;
+        public const int SHIFT_COLORIDX = 3;
         public const uint MASK_COLORIDX = 0xFFu << SHIFT_COLORIDX;
         
         public static bool GetWalkable(uint packed) => ((packed >> BIT_WALKABLE) & 1u) != 0u;

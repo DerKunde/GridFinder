@@ -5,29 +5,31 @@ using Unity.Mathematics;
 namespace GridFinder.Structs
 {
 
+
     public struct GridMeta : IComponentData
     {
-        public int Width, Height;
-        public int ChunkSize;    // z.B. 64
-        public float CellSize;   // Weltgröße
+        public int2 Size;     // Gesamtgröße in Zellen (W,H)
+        public int  ChunkSize;
+        public float CellSize; // Weltmaß, optional
+        public Cell DefaultCell;
     }
 
     public struct ChunkCoord : IComponentData
     {
-        public int2 Coord;       // (cx, cy)
+        public int2 Coord;    // (cx, cy)
     }
 
     public struct ChunkState : IComponentData
     {
-        public byte IsUniform;   // 1 = uniform, 0 = materialized
-        public Cell UniformValue;
+        public byte IsUniform;     // 1 = uniform, 0 = materialized
+        public Cell UniformValue;  // gültig wenn IsUniform==1
         public byte Dirty;
     }
 
 // Materialisiertes Zellenarray pro Chunk (optional, nur wenn IsUniform==0)
     public struct ChunkCells : IBufferElementData
     {
-        public Cell Value;
+        public Cell Value; // Länge = ChunkSize*ChunkSize, wenn materialisiert
     }
     
     public struct PaintCommand : IComponentData
