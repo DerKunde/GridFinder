@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Unity.Mathematics;
+using UnityEngine.EventSystems;
 
 namespace GridFinder.Samples
 {
@@ -51,6 +52,12 @@ namespace GridFinder.Samples
 
         void Update()
         {
+            // NEU: Maus über UI? Dann Grid-Auswahl blockieren
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                return;   
+            }
+
             if (Input.GetMouseButtonDown(0)) // LMB -> Start
             {
                 if (TryPickCell(out var c))
