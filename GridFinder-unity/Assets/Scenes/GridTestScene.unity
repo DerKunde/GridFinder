@@ -824,6 +824,7 @@ GameObject:
   - component: {fileID: 1352696717}
   - component: {fileID: 1352696716}
   - component: {fileID: 1352696715}
+  - component: {fileID: 1352696718}
   m_Layer: 0
   m_Name: GridController
   m_TagString: Untagged
@@ -844,7 +845,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lineColor: {r: 1, g: 1, b: 1, a: 0.2}
-  lineWidth: 1
+  zBias: 0.0005
 --- !u!114 &1352696716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -857,8 +858,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc7be4b66f4dadb4ab09953925743754, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cols: 32
-  rows: 32
+  cols: 1000
+  rows: 1000
   cellSize: 1
   zOffset: 0
   startColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
@@ -878,6 +879,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1352696718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1352696714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a13b4b42faca4f7084aaed91dbc2c8c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grid: {fileID: 1352696716}
+  ui: {fileID: 406788269}
+  lineColor: {r: 0.3, g: 0.9, b: 1, a: 1}
+  drawNodeMarkers: 1
+  markerScale: 0.35
+  zBias: 0.001
 --- !u!1 &1556575420
 GameObject:
   m_ObjectHideFlags: 0
@@ -1249,10 +1268,10 @@ RectTransform:
   - {fileID: 1841916916}
   m_Father: {fileID: 406788273}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 50, y: 0}
+  m_SizeDelta: {x: 100, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1790728902
 MonoBehaviour:
