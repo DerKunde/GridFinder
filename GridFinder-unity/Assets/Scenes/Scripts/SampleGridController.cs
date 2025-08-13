@@ -1,5 +1,6 @@
 using System;
 using GridFinder.Runtime.Grid;
+using GridFinder.Runtime.Grid.Core;
 using GridFinder.Runtime.Mono;
 using UnityEngine;
 using Unity.Mathematics;
@@ -16,6 +17,7 @@ namespace GridFinder.Samples
         public int chunkSize = 8;
         [Min(0.1f)] public float cellSize = 1f;
         public float zOffset = 0f; // Grid liegt in X/Y bei Z=zOffset
+        public GridData Grid { get; private set; }
 
         [Header("Selection")]
         public Color startColor = new Color(0.2f, 0.9f, 0.2f, 1f);
@@ -32,8 +34,8 @@ namespace GridFinder.Samples
         void Awake()
         {
             
-            var grid = GridFactory.CreateUniform(cols, rows, chunkSize, defaultCell: Cell.Default);
-            Debug.Log(grid.ChunkSize + "I am here");
+            Grid = GridFactory.CreateUniform(cols, rows, chunkSize, defaultCell: Cell.Default);
+            Debug.Log(Grid.ChunkSize + "I am here");
             _cam = Camera.main;
             if (_cam == null)
             {

@@ -825,6 +825,7 @@ GameObject:
   - component: {fileID: 1352696716}
   - component: {fileID: 1352696715}
   - component: {fileID: 1352696718}
+  - component: {fileID: 1352696719}
   m_Layer: 0
   m_Name: GridController
   m_TagString: Untagged
@@ -860,6 +861,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cols: 1000
   rows: 1000
+  chunkSize: 8
   cellSize: 1
   zOffset: 0
   startColor: {r: 0.2, g: 0.9, b: 0.2, a: 1}
@@ -897,6 +899,22 @@ MonoBehaviour:
   drawNodeMarkers: 1
   markerScale: 0.35
   zBias: 0.001
+--- !u!114 &1352696719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1352696714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84d95b7f041746c586b8c66ac9a50c0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  material: {fileID: 2100000, guid: cd6b8a6eac6c88f4fae76d5efdfad498, type: 2}
+  paletteTex: {fileID: 10305, guid: 0000000000000000f000000000000000, type: 0}
+  tintUnwalkable: 1
+  cellZ: 0
 --- !u!1 &1556575420
 GameObject:
   m_ObjectHideFlags: 0
