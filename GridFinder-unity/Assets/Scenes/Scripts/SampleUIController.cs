@@ -70,7 +70,10 @@ namespace GridFinder.Samples
 
         void RunOnce()
         {
-            if (grid == null) return;
+            if (grid == null)
+            {
+                grid.CreateGrid(grid.cols,grid.rows);
+            }
 
             var res = PathfindingAStar.Find(grid.cols, grid.rows, grid.StartCell, grid.GoalCell, IsBlocked);
 

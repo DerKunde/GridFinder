@@ -34,6 +34,18 @@ namespace GridFinder.Runtime.Mono
                 return c;
             }, defaultCell);
         
+        public static GridData CreateCheckerZones(int width, int height, int chunkSize, int tile, ushort zoneA, ushort zoneB, byte colA, byte colB, Cell defaultCell)
+            => CreateFromGenerator(width, height, chunkSize, (x, y) =>
+            {
+                bool isA = ((x / tile) + (y / tile)) % 2 == 0;
+
+                var c = defaultCell;
+                c.ZoneId = isA ? zoneA : zoneB;
+                c.Packed = Cell.SetColorIndex(c.Packed, isA ? colA : colB);
+
+                return c;
+            }, defaultCell);
+        
         public static GridData CreateFromTexture(Texture2D tex, int chunkSize, Dictionary<Color32,(ushort zone, byte colorIdx)> mapping, in Cell defaultCell)
         {
             var w = tex.width; var h = tex.height;

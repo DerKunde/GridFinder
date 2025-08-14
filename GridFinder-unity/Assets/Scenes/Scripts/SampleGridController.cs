@@ -84,6 +84,11 @@ namespace GridFinder.Samples
             }
         }
 
+        public void CreateGrid(int width, int height)
+        {
+            Grid = GridFactory.CreateUniform(width, height, chunkSize, Cell.Default);
+        }
+
         bool TryPickCell(out int2 cell)
         {
             var ray = _cam.ScreenPointToRay(Input.mousePosition);
@@ -124,9 +129,9 @@ namespace GridFinder.Samples
             GL.MultMatrix(Matrix4x4.identity);
 
             // Start
-            DrawCellFillGL(StartCell, startColor, 0.6f);
+            DrawCellFillGL(StartCell, startColor, 1f);
             // Ziel
-            DrawCellFillGL(GoalCell, goalColor, 0.6f);
+            DrawCellFillGL(GoalCell, goalColor, 1f);
 
             GL.PopMatrix();
         }
