@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Text;
 using GridFinder.Runtime.Grid;
 using GridFinder.Runtime.Mono;
@@ -141,8 +142,23 @@ namespace GridFinder.Samples
             {
                 if (TryPickCell(out var c))
                 {
-                    //TODO: Click -> Set cell according to current editMode
-                    //TODO: Click & Drag -> Mark area and set Cell according to current editMode
+                    switch (currentEditMode)
+                    {
+                        case EditModes.setWalkable:
+                            grid.TrySetWalkable(c);
+                            break;
+                        case EditModes.setUnwalkable:
+                            grid.TrySetUnwalkable(c);
+                            break;
+                        case EditModes.setSpawnpoint:
+                            grid.SetSpawnPoint(c);
+                            break;
+                        case EditModes.setTarget:
+                            grid.SetTarget(c);
+                            break;
+                        default:  throw new NotImplementedException("Current Editmode is not implemented!");
+                    }
+                    grid.TrySetWalkable(c);
                 }
             }
         }

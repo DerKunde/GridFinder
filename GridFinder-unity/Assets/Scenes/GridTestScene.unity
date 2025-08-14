@@ -2706,7 +2706,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1751914928}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 3, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2769,6 +2769,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac4b51e89ff54bfbbf2f492ea8d648dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridController: {fileID: 1352696716}
+  gridPlane: 0
   gridMin: {x: 0, y: 0}
   gridSize: {x: 1000, y: 1000}
   panSpeed: 20
@@ -2779,6 +2781,7 @@ MonoBehaviour:
   zoomSpeed: 10
   smoothZoom: 1
   zoomSmoothing: 0.15
+  initialPlaneDistance: 10
 --- !u!1 &1790728900
 GameObject:
   m_ObjectHideFlags: 0

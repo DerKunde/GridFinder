@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using GridFinder.Runtime.Grid;
 using GridFinder.Runtime.Grid.Core;
 using R3;
 using Unity.Mathematics;
@@ -48,6 +49,11 @@ namespace GridFinder.Samples
                 })
                 .AddTo(_disposables);
 
+            gridController._cellChanged().Subscribe(data =>
+            {
+                RenderCellState(data.cords, data.cell);
+            });
+
             EnsureMaterial();
         }
 
@@ -90,21 +96,49 @@ namespace GridFinder.Samples
             ForceDraw();
         }
 
-        public void RenderCellState(int2 cell) => RenderCellState(cell, stateFillColor);
+        public void RenderCellState(int2 cords, Cell cell)
+        {
+            // Zustand aus den Bits lesen
+            bool isWalkable = Cell.GetWalkable(cell.Packed);
+            // Optional: Farbindex, falls du den für Zonen/Typen verwenden willst
+            byte colorIdx   = Cell.GetColorIndex(cell.Packed);
 
-        public void RenderCellState(int2 cell, Color color)
+            // Farbe bestimmen:
+            // - Unwalkable/blocked → rot-transparent
+            // - Walkable → Standard-State-Farbe (oder per colorIdx spezifizieren)
+            Color col = isWalkable
+                ? stateFillColor
+                : new Color(0.9f, 0.2f, 0.2f, 0.55f);
+
+            // Falls du den ColorIndex nutzen willst, kannst du hier (nur wenn walkable)
+            // eine einfache Palette berücksichtigen (Beispiel):
+            // if (isWalkable)
+            // {
+            //     switch (colorIdx)
+            //     {
+            //         case 1: col = new Color(0.2f, 0.7f, 1f, 0.55f); break; // z.B. "Wasser"
+            //         case 2: col = new Color(0.2f, 1f, 0.4f, 0.55f); break; // z.B. "Wiese"
+            //         // ...
+            //     }
+            // }
+
+            RenderCellState(cords, col);
+        }
+
+
+        public void RenderCellState(int2 cords, Color color)
         {
             // vorhandenen Eintrag ersetzen, sonst hinzufügen
             for (int i = 0; i < _stateCells.Count; i++)
             {
-                if (_stateCells[i].cell.Equals(cell))
+                if (_stateCells[i].cell.Equals(cords))
                 {
-                    _stateCells[i] = (cell, color);
+                    _stateCells[i] = (cords, color);
                     ForceDraw();
                     return;
                 }
             }
-            _stateCells.Add((cell, color));
+            _stateCells.Add((cords, color));
             ForceDraw();
         }
 

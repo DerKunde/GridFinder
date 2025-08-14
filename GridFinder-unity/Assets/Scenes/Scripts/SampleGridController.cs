@@ -31,6 +31,7 @@ namespace GridFinder.Samples
         public GridData CurrentGrid { get; private set; }
 
         public ReactiveProperty<GridData> _gridCreated = new ReactiveProperty<GridData>();
+        private readonly Subject<(int2 cords, Cell cell)> _cellChangedSubject = new();
 
 
         Camera _cam;
@@ -63,54 +64,49 @@ namespace GridFinder.Samples
                 .Select(g => (g.Width, g.Height))
                 .DistinctUntilChanged();
         }
+        
+        public bool TrySetWalkable(int2 c)
+        {
+            if (!InBounds(c)) return false;
 
-        // void OnDrawGizmos()
-        // {
-        //     // Start/Ziel Marker als halbtransparente Quads (Editor-Ansicht)
-        //     if (!Application.isPlaying) return;
-        //     DrawCellFill(StartCell, startColor * new Color(1,1,1,0.5f));
-        //     DrawCellFill(GoalCell,  goalColor  * new Color(1,1,1,0.5f));
-        // }
-        //
-        // void OnRenderObject()
-        // {
-        //     if (_markerMat == null) return;
-        //     _markerMat.SetPass(0);
-        //     GL.PushMatrix();
-        //     GL.MultMatrix(Matrix4x4.identity);
-        //
-        //     // Start
-        //     DrawCellFillGL(StartCell, startColor, 1f);
-        //     // Ziel
-        //     DrawCellFillGL(GoalCell, goalColor, 1f);
-        //
-        //     GL.PopMatrix();
-        // }
-        //
-        // void DrawCellFill(int2 c, Color col)
-        // {
-        //     Gizmos.color = col;
-        //     Vector3 p = new Vector3((c.x + 0.5f) * cellSize, (c.y + 0.5f) * cellSize, zOffset);
-        //     Vector3 sz = new Vector3(0.9f * cellSize, 0.9f * cellSize, 0.0f);
-        //     Gizmos.DrawCube(p, sz);
-        // }
-        //
-        // void DrawCellFillGL(int2 c, Color col, float scale)
-        // {
-        //     float half = 0.5f * cellSize * scale;
-        //     float cx = (c.x + 0.5f) * cellSize;
-        //     float cy = (c.y + 0.5f) * cellSize;
-        //     float z = zOffset;
-        //
-        //     GL.Begin(GL.QUADS);
-        //     GL.Color(col);
-        //     GL.Vertex3(cx - half, cy - half, z);
-        //     GL.Vertex3(cx + half, cy - half, z);
-        //     GL.Vertex3(cx + half, cy + half, z);
-        //     GL.Vertex3(cx - half, cy + half, z);
-        //     GL.End();
-        // }
+            var cell = CurrentGrid.GetCell(c.x, c.y); // passe an, falls deine API anders heißt
+            cell = Cell.WalkableCell;                  // ggf. IsWalkable/Flags → hier anpassen
+            CurrentGrid.SetCell(c.x, c.y, cell);
+            
+            _cellChangedSubject.OnNext((c, cell));                    // Renderer/Listener informieren
+            return true;
+        }
         
-        
+        public bool TrySetUnwalkable(int2 c)
+        {
+            if (!InBounds(c)) return false;
+
+            var cell = CurrentGrid.GetCell(c.x, c.y); // passe an, falls deine API anders heißt
+            cell = Cell.UnwalkableCell;                  // ggf. IsWalkable/Flags → hier anpassen
+            CurrentGrid.SetCell(c.x, c.y, cell);
+            
+            _cellChangedSubject.OnNext((c, cell));                    // Renderer/Listener informieren
+            return true;
+        }
+
+        public void SetTarget(int2 target)
+        {
+            GoalCell = target;
+        }
+
+        public void SetSpawnPoint(int2 start)
+        {
+            StartCell = start;
+        }
+
+        public Observable<(int2 cords, Cell cell)> _cellChanged()
+        {
+            return _cellChangedSubject.AsObservable();
+        }
+
+        private bool InBounds(int2 c) =>
+            CurrentGrid != null &&
+            c.x >= 0 && c.x < CurrentGrid.Width &&
+            c.y >= 0 && c.y < CurrentGrid.Height;
     }
 }
