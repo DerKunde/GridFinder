@@ -2,6 +2,7 @@ using System;
 using GridFinder.Runtime.Grid;
 using GridFinder.Runtime.Grid.Core;
 using GridFinder.Runtime.Mono;
+using R3;
 using UnityEngine;
 using Unity.Mathematics;
 using UnityEngine.EventSystems;
@@ -27,65 +28,31 @@ namespace GridFinder.Samples
         public int2 GoalCell  { get; private set; }
 
         public event Action<int2,int2> OnStartGoalChanged;
+        public GridData CurrentGrid { get; private set; }
+
+        public ReactiveProperty<GridData> _gridCreated = new ReactiveProperty<GridData>();
+
 
         Camera _cam;
         Material _markerMat;
 
         void Awake()
         {
-            
-            Grid = GridFactory.CreateUniform(cols, rows, chunkSize, defaultCell: Cell.Default);
-            Debug.Log(Grid.ChunkSize + "I am here");
-            _cam = Camera.main;
-            if (_cam == null)
-            {
-                var camGO = new GameObject("Main Camera");
-                _cam = camGO.AddComponent<Camera>();
-                _cam.tag = "MainCamera";
-            }
-
-            // Top-Down Orthographic
-            _cam.orthographic = true;
-            _cam.transform.position = new Vector3(cols * cellSize * 0.5f, rows * cellSize * 0.5f, -10f + zOffset);
-            _cam.transform.rotation = Quaternion.Euler(0, 0, 0); // Blick Richtung +Z? Wir schauen von -Z nach +Z
-            _cam.orthographicSize = 0.55f * Mathf.Max(cols * cellSize, rows * cellSize);
-
-            // Anfangswerte
-            StartCell = new int2(1, 1);
-            GoalCell  = new int2(cols - 2, rows - 2);
-
-            // einfacher Marker-Mat (Sprites/Unlit/Color)
             _markerMat = new Material(Shader.Find("Sprites/Default"));
+            StartCell = new int2(0, 0);
+            GoalCell = new int2(cols - 1, rows - 1);
+        }
+
+        void Start()
+        {
+            CreateGrid(cols, rows);
         }
         
 
         public void CreateGrid(int width, int height)
         {
-            Grid = GridFactory.CreateUniform(width, height, chunkSize, Cell.Default);
-        }
-
-        bool TryPickCell(out int2 cell)
-        {
-            var ray = _cam.ScreenPointToRay(Input.mousePosition);
-            // Ebene z = zOffset
-            if (Mathf.Abs(ray.direction.z) < 1e-6f)
-            {
-                cell = default;
-                return false;
-            }
-            float t = (zOffset - ray.origin.z) / ray.direction.z;
-            if (t < 0)
-            {
-                cell = default;
-                return false;
-            }
-            Vector3 hit = ray.origin + t * ray.direction;
-            int x = Mathf.FloorToInt(hit.x / cellSize);
-            int y = Mathf.FloorToInt(hit.y / cellSize);
-            x = Mathf.Clamp(x, 0, cols - 1);
-            y = Mathf.Clamp(y, 0, rows - 1);
-            cell = new int2(x, y);
-            return true;
+            CurrentGrid = GridFactory.CreateUniform(width, height, chunkSize, Cell.Default);
+            _gridCreated.OnNext(CurrentGrid);
         }
 
         void OnDrawGizmos()

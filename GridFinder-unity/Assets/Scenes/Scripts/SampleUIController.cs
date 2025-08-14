@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
+using GridFinder.Runtime.Grid;
+using GridFinder.Runtime.Mono;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -54,19 +56,25 @@ namespace GridFinder.Samples
         System.Collections.Generic.List<int2> _lastPath = new System.Collections.Generic.List<int2>();
 
         private EditModes currentEditMode = EditModes.setWalkable;
+        public GridGLRenderer _renderer;
 
         void Start()
         {
             if (grid == null) grid = FindObjectsByType<SampleGridController>(FindObjectsSortMode.None)[0];
+            if (Camera.main != null) _cam = Camera.main;
+
+            if (editToWalkableButton != null) editToWalkableButton.onClick.AddListener(() 
+                => SwitchEditMode(EditModes.setWalkable));
+            if(editToUnwalkableButton != null) editToUnwalkableButton.onClick.AddListener(() 
+                => SwitchEditMode(EditModes.setUnwalkable));
+            if(setSpawnpointsButton != null) setSpawnpointsButton.onClick.AddListener(() 
+                => SwitchEditMode(EditModes.setSpawnpoint));
+            if(setGoalButton != null) setGoalButton.onClick.AddListener(() 
+                => SwitchEditMode(EditModes.setTarget));
             
-            if(editToWalkableButton != null) editToWalkableButton.onClick.AddListener(SwitchEditMode(EditModes.setWalkable));
-            if(editToUnwalkableButton != null) editToUnwalkableButton.onClick.AddListener(SwitchEditMode(EditModes.setUnwalkable));
-            if(setSpawnpointsButton != null) setSpawnpointsButton.onClick.AddListener(SwitchEditMode(EditModes.setSpawnpoint));
-            if(setGoalButton != null) setGoalButton.onClick.AddListener(SwitchEditMode(EditModes.setTarget));
             if(startSimulationButton != null) startSimulationButton.onClick.AddListener(StartSimulation);
             if(pauseSimulationButton != null) pauseSimulationButton.onClick.AddListener(PauseSimulation);
             if(createNewGridButton != null) createNewGridButton.onClick.AddListener(CreateNewGrid);
-
             
             BuildBlocked();
             if (grid != null) grid.OnStartGoalChanged += (_, __) => UpdateStatsHeader();
@@ -75,23 +83,22 @@ namespace GridFinder.Samples
 
         private void CreateNewGrid()
         {
-            throw new System.NotImplementedException();
+            grid.CreateGrid(grid.cols, grid.rows);
         }
 
         private void StartSimulation()
         {
-            throw new System.NotImplementedException();
         }
 
         private void PauseSimulation()
         {
-            throw new System.NotImplementedException();
         }
 
-        private UnityAction SwitchEditMode(EditModes editMode)
+        private void SwitchEditMode(EditModes editMode)
         {
+
+            currentEditMode = editMode;
             Debug.Log("EditMode = " + currentEditMode.ToString());
-            return () => currentEditMode = editMode;
         }
         
         void BuildBlocked()
@@ -127,7 +134,7 @@ namespace GridFinder.Samples
 
             if (TryPickCell(out var hc))
             {
-                //TODO: color hoverd cell
+                _renderer.RenderHoverCell(hc);
             }
             
             if (Input.GetMouseButtonUp(0)) // LMB -> Start
