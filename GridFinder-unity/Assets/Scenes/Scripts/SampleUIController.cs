@@ -4,18 +4,43 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Mathematics;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 namespace GridFinder.Samples
 {
+
+    public enum EditModes
+    {
+        setWalkable,
+        unsetWalkable,
+        setUnwalkable,
+        unsetUnwalkable,
+        setSpawnpoint,
+        unsetSpawnpoint,
+        setTarget
+    }
+    
     public class SampleUIController : MonoBehaviour
     {
         [Header("Refs")]
         public SampleGridController grid;
         public GridGLRenderer gridRenderer;
+        public float zOffset = 0f; // Grid liegt in X/Y bei Z=zOffset
+
+        private Camera _cam;
 
         [Header("UI")]
-        public Button runOnceButton;
-        public Toggle autoToggle;
+        [Header("Buttons")]
+        public Button startSimulationButton;
+        public Button pauseSimulationButton;
+        public Button createNewGridButton;
+        
+        public Button editToWalkableButton;
+        public Button editToUnwalkableButton;
+        public Button setSpawnpointsButton;
+        public Button setGoalButton;
+        
         public TMP_Text statsText;
 
         [Header("Blocks (optional)")]
@@ -28,23 +53,47 @@ namespace GridFinder.Samples
         public System.Collections.Generic.IReadOnlyList<int2> LastPath => _lastPath;
         System.Collections.Generic.List<int2> _lastPath = new System.Collections.Generic.List<int2>();
 
+        private EditModes currentEditMode = EditModes.setWalkable;
+
         void Start()
         {
-            if (grid == null) grid = FindObjectOfType<SampleGridController>();
-            if (runOnceButton != null) runOnceButton.onClick.AddListener(RunOnce);
-            if (autoToggle != null) autoToggle.isOn = false;
+            if (grid == null) grid = FindObjectsByType<SampleGridController>(FindObjectsSortMode.None)[0];
+            
+            if(editToWalkableButton != null) editToWalkableButton.onClick.AddListener(SwitchEditMode(EditModes.setWalkable));
+            if(editToUnwalkableButton != null) editToUnwalkableButton.onClick.AddListener(SwitchEditMode(EditModes.setUnwalkable));
+            if(setSpawnpointsButton != null) setSpawnpointsButton.onClick.AddListener(SwitchEditMode(EditModes.setSpawnpoint));
+            if(setGoalButton != null) setGoalButton.onClick.AddListener(SwitchEditMode(EditModes.setTarget));
+            if(startSimulationButton != null) startSimulationButton.onClick.AddListener(StartSimulation);
+            if(pauseSimulationButton != null) pauseSimulationButton.onClick.AddListener(PauseSimulation);
+            if(createNewGridButton != null) createNewGridButton.onClick.AddListener(CreateNewGrid);
 
+            
             BuildBlocked();
             if (grid != null) grid.OnStartGoalChanged += (_, __) => UpdateStatsHeader();
             UpdateStatsHeader();
         }
 
-        void Update()
+        private void CreateNewGrid()
         {
-            if (autoToggle != null && autoToggle.isOn)
-                RunOnce();
+            throw new System.NotImplementedException();
         }
 
+        private void StartSimulation()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void PauseSimulation()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private UnityAction SwitchEditMode(EditModes editMode)
+        {
+            Debug.Log("EditMode = " + currentEditMode.ToString());
+            return () => currentEditMode = editMode;
+        }
+        
         void BuildBlocked()
         {
             if (grid == null) return;
@@ -67,7 +116,54 @@ namespace GridFinder.Samples
             if (c.x == grid.GoalCell.x  && c.y == grid.GoalCell.y ) return false;
             return _blocked[c.x, c.y];
         }
+        
+        void Update()
+        {
+            // NEU: Maus über UI? Dann Grid-Auswahl blockieren
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                return;   
+            }
 
+            if (TryPickCell(out var hc))
+            {
+                //TODO: color hoverd cell
+            }
+            
+            if (Input.GetMouseButtonUp(0)) // LMB -> Start
+            {
+                if (TryPickCell(out var c))
+                {
+                    //TODO: Click -> Set cell according to current editMode
+                    //TODO: Click & Drag -> Mark area and set Cell according to current editMode
+                }
+            }
+        }
+        
+        bool TryPickCell(out int2 cell)
+        {
+            var ray = _cam.ScreenPointToRay(Input.mousePosition);
+            // Ebene z = zOffset
+            if (Mathf.Abs(ray.direction.z) < 1e-6f)
+            {
+                cell = default;
+                return false;
+            }
+            float t = (zOffset - ray.origin.z) / ray.direction.z;
+            if (t < 0)
+            {
+                cell = default;
+                return false;
+            }
+            Vector3 hit = ray.origin + t * ray.direction;
+            int x = Mathf.FloorToInt(hit.x / grid.cellSize);
+            int y = Mathf.FloorToInt(hit.y / grid.cellSize);
+            x = Mathf.Clamp(x, 0, grid.cols - 1);
+            y = Mathf.Clamp(y, 0, grid.rows - 1);
+            cell = new int2(x, y);
+            return true;
+        }
+        
         void RunOnce()
         {
             if (grid == null)

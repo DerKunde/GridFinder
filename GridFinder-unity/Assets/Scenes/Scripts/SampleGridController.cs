@@ -57,32 +57,7 @@ namespace GridFinder.Samples
             // einfacher Marker-Mat (Sprites/Unlit/Color)
             _markerMat = new Material(Shader.Find("Sprites/Default"));
         }
-
-        void Update()
-        {
-            // NEU: Maus über UI? Dann Grid-Auswahl blockieren
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            {
-                return;   
-            }
-
-            if (Input.GetMouseButtonDown(0)) // LMB -> Start
-            {
-                if (TryPickCell(out var c))
-                {
-                    StartCell = c;
-                    OnStartGoalChanged?.Invoke(StartCell, GoalCell);
-                }
-            }
-            if (Input.GetMouseButtonDown(1)) // RMB -> Ziel
-            {
-                if (TryPickCell(out var c))
-                {
-                    GoalCell = c;
-                    OnStartGoalChanged?.Invoke(StartCell, GoalCell);
-                }
-            }
-        }
+        
 
         public void CreateGrid(int width, int height)
         {
