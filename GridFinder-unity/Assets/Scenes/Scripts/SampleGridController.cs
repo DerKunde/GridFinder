@@ -55,51 +55,62 @@ namespace GridFinder.Samples
             _gridCreated.OnNext(CurrentGrid);
         }
 
-        void OnDrawGizmos()
+// Read-only Stream für Kamera & Co.
+        public Observable<(int, int)> ObserveGridDimensions()
         {
-            // Start/Ziel Marker als halbtransparente Quads (Editor-Ansicht)
-            if (!Application.isPlaying) return;
-            DrawCellFill(StartCell, startColor * new Color(1,1,1,0.5f));
-            DrawCellFill(GoalCell,  goalColor  * new Color(1,1,1,0.5f));
+            // _gridCreated ist deine ReactiveProperty<GridData>
+            return _gridCreated
+                .Select(g => (g.Width, g.Height))
+                .DistinctUntilChanged();
         }
 
-        void OnRenderObject()
-        {
-            if (_markerMat == null) return;
-            _markerMat.SetPass(0);
-            GL.PushMatrix();
-            GL.MultMatrix(Matrix4x4.identity);
-
-            // Start
-            DrawCellFillGL(StartCell, startColor, 1f);
-            // Ziel
-            DrawCellFillGL(GoalCell, goalColor, 1f);
-
-            GL.PopMatrix();
-        }
-
-        void DrawCellFill(int2 c, Color col)
-        {
-            Gizmos.color = col;
-            Vector3 p = new Vector3((c.x + 0.5f) * cellSize, (c.y + 0.5f) * cellSize, zOffset);
-            Vector3 sz = new Vector3(0.9f * cellSize, 0.9f * cellSize, 0.0f);
-            Gizmos.DrawCube(p, sz);
-        }
-
-        void DrawCellFillGL(int2 c, Color col, float scale)
-        {
-            float half = 0.5f * cellSize * scale;
-            float cx = (c.x + 0.5f) * cellSize;
-            float cy = (c.y + 0.5f) * cellSize;
-            float z = zOffset;
-
-            GL.Begin(GL.QUADS);
-            GL.Color(col);
-            GL.Vertex3(cx - half, cy - half, z);
-            GL.Vertex3(cx + half, cy - half, z);
-            GL.Vertex3(cx + half, cy + half, z);
-            GL.Vertex3(cx - half, cy + half, z);
-            GL.End();
-        }
+        // void OnDrawGizmos()
+        // {
+        //     // Start/Ziel Marker als halbtransparente Quads (Editor-Ansicht)
+        //     if (!Application.isPlaying) return;
+        //     DrawCellFill(StartCell, startColor * new Color(1,1,1,0.5f));
+        //     DrawCellFill(GoalCell,  goalColor  * new Color(1,1,1,0.5f));
+        // }
+        //
+        // void OnRenderObject()
+        // {
+        //     if (_markerMat == null) return;
+        //     _markerMat.SetPass(0);
+        //     GL.PushMatrix();
+        //     GL.MultMatrix(Matrix4x4.identity);
+        //
+        //     // Start
+        //     DrawCellFillGL(StartCell, startColor, 1f);
+        //     // Ziel
+        //     DrawCellFillGL(GoalCell, goalColor, 1f);
+        //
+        //     GL.PopMatrix();
+        // }
+        //
+        // void DrawCellFill(int2 c, Color col)
+        // {
+        //     Gizmos.color = col;
+        //     Vector3 p = new Vector3((c.x + 0.5f) * cellSize, (c.y + 0.5f) * cellSize, zOffset);
+        //     Vector3 sz = new Vector3(0.9f * cellSize, 0.9f * cellSize, 0.0f);
+        //     Gizmos.DrawCube(p, sz);
+        // }
+        //
+        // void DrawCellFillGL(int2 c, Color col, float scale)
+        // {
+        //     float half = 0.5f * cellSize * scale;
+        //     float cx = (c.x + 0.5f) * cellSize;
+        //     float cy = (c.y + 0.5f) * cellSize;
+        //     float z = zOffset;
+        //
+        //     GL.Begin(GL.QUADS);
+        //     GL.Color(col);
+        //     GL.Vertex3(cx - half, cy - half, z);
+        //     GL.Vertex3(cx + half, cy - half, z);
+        //     GL.Vertex3(cx + half, cy + half, z);
+        //     GL.Vertex3(cx - half, cy + half, z);
+        //     GL.End();
+        // }
+        
+        
     }
 }
