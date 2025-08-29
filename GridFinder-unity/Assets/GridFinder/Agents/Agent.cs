@@ -1,7 +1,6 @@
-﻿namespace GridFinder.Agents
+﻿using Unity.Entities;
+
+namespace GridFinder.Agents
 {
-    public struct Agent
-    {
-        
-    }
+    public struct Agent : IComponentData {}
 }
