@@ -4,6 +4,7 @@ using GridFinder.Runtime.Grid;
 using GridFinder.Runtime.Grid.Core;
 using R3;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GridFinder.Samples
@@ -16,6 +17,7 @@ namespace GridFinder.Samples
         public Color borderColor    = new(1f, 1f, 1f, 0.20f);
         public Color hoverFillColor = new(1f, 0.9f, 0.2f, 0.45f);
         public Color stateFillColor = new(0.2f, 0.7f, 1f, 0.55f);
+        public Color spawnerFillColor = new(0.5f, 0.0f, 1f, 0.55f);
 
         [Header("Z-Bias")]
         [Tooltip("Linien leicht vor die Grid-Ebene schieben, um Z-Fighting zu vermeiden.")]
@@ -40,6 +42,12 @@ namespace GridFinder.Samples
         void Awake()
         {
             gridController = GetComponent<SampleGridController>();
+
+            gridController.OnStartGoalChanged += (start, goal) =>
+            {
+                RenderCellState(start, gridController.startColor);
+                RenderCellState(goal, gridController.goalColor);
+            };
 
             gridController._gridCreated
                 .Subscribe(g =>
@@ -126,7 +134,7 @@ namespace GridFinder.Samples
         }
 
 
-        public void RenderCellState(int2 cords, Color color)
+        private void RenderCellState(int2 cords, Color color)
         {
             // vorhandenen Eintrag ersetzen, sonst hinzufügen
             for (int i = 0; i < _stateCells.Count; i++)
