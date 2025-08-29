@@ -28,7 +28,6 @@ namespace GridFinder.Samples
     {
         [Header("Refs")]
         public SampleGridController grid;
-        public GridGLRenderer gridRenderer;
         public float zOffset = 0f; // Grid liegt in X/Y bei Z=zOffset
 
         private Camera _cam;
@@ -158,7 +157,6 @@ namespace GridFinder.Samples
                             break;
                         default:  throw new NotImplementedException("Current Editmode is not implemented!");
                     }
-                    grid.TrySetWalkable(c);
                 }
             }
         }
