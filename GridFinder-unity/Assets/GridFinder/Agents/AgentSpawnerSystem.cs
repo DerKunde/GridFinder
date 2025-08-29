@@ -15,26 +15,26 @@ namespace GridFinder.Agents
             double elapsed = SystemAPI.Time.ElapsedTime;
             const float yOffset = 0.01f; // gegen Z-Fighting mit dem Grid
 
-            foreach (var sp in SystemAPI.Query<RefRW<AgentSpawner>>())
+            foreach (var agentSpawner in SystemAPI.Query<RefRW<AgentSpawner>>())
             {
-                if (sp.ValueRO.NextSpawnTime < 0)
+                if (agentSpawner.ValueRO.NextSpawnTime < 0)
                 {
-                    sp.ValueRW.NextSpawnTime = elapsed + sp.ValueRO.SpawnRate;
+                    agentSpawner.ValueRW.NextSpawnTime = elapsed + agentSpawner.ValueRO.SpawnRate;
                     continue;
                 }
 
                 // Prefab-Transform EINMAL lesen (enthält z.B. -90° um X und richtige Scale)
-                var baseLt = state.EntityManager.GetComponentData<LocalTransform>(sp.ValueRO.Prefab);
+                var baseLt = state.EntityManager.GetComponentData<LocalTransform>(agentSpawner.ValueRO.Prefab);
 
-                while (sp.ValueRO.NextSpawnTime <= elapsed)
+                while (agentSpawner.ValueRO.NextSpawnTime <= elapsed)
                 {
-                    var e = ecb.Instantiate(sp.ValueRO.Prefab);
+                    var e = ecb.Instantiate(agentSpawner.ValueRO.Prefab);
 
                     // Nur Position austauschen, Rotation/Scale beibehalten
-                    baseLt.Position = sp.ValueRO.SpawnPosition + new float3(0, yOffset, 0);
+                    baseLt.Position = agentSpawner.ValueRO.SpawnPosition + new float3(0, yOffset, 0);
                     ecb.SetComponent(e, baseLt);
 
-                    sp.ValueRW.NextSpawnTime += sp.ValueRO.SpawnRate;
+                    agentSpawner.ValueRW.NextSpawnTime += agentSpawner.ValueRO.SpawnRate;
                 }
             }
 

@@ -44,6 +44,7 @@ namespace GridFinder.Runtime.Grid
         // Fertige Vorlagen (value types; Kopie = 8 Bytes, keine GC-Alloc)
         public static readonly Cell WalkableCell   = new() { Packed = MASK_WALKABLE, ZoneId = 0, Cost = 0 };
         public static readonly Cell UnwalkableCell = new() { Packed = 0u,           ZoneId = 0, Cost = 0 };
+        public static readonly Cell SpawnerCell = new() { Packed = MASK_WALKABLE, ZoneId = 0, Cost = 0 };
 
         // Bequemlichkeit
         public static Cell Default => WalkableCell;

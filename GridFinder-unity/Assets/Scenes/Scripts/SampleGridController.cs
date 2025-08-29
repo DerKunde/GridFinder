@@ -3,6 +3,8 @@ using GridFinder.Runtime.Grid;
 using GridFinder.Runtime.Grid.Core;
 using GridFinder.Runtime.Mono;
 using R3;
+using Unity.Collections;
+using Unity.Entities;
 using UnityEngine;
 using Unity.Mathematics;
 using UnityEngine.EventSystems;
@@ -92,16 +94,46 @@ namespace GridFinder.Samples
         public void SetTarget(int2 target)
         {
             GoalCell = target;
+                        OnStartGoalChanged?.Invoke(StartCell, GoalCell);
+
         }
 
         public void SetSpawnPoint(int2 start)
         {
+            if (!InBounds(start)) return;
+
             StartCell = start;
+            var worldPos = new float3(
+                start.x * cellSize + cellSize * 0.5f,
+                start.y * cellSize + cellSize * 0.5f,
+                zOffset
+            );
+            SetSpawnOnAgentSpawners(worldPos);
+
+            OnStartGoalChanged?.Invoke(StartCell, GoalCell);
         }
 
         public Observable<(int2 cords, Cell cell)> _cellChanged()
         {
             return _cellChangedSubject.AsObservable();
+        }
+        
+        
+        void SetSpawnOnAgentSpawners(Vector3 worldPos)
+        {
+            var world = World.DefaultGameObjectInjectionWorld;
+            if (world == null) return;
+
+            var em = world.EntityManager;
+            var q = em.CreateEntityQuery(ComponentType.ReadWrite<AgentSpawner>());
+
+            using var ents = q.ToEntityArray(Allocator.Temp);
+            foreach (var e in ents)
+            {
+                var s = em.GetComponentData<AgentSpawner>(e);
+                s.SpawnPosition = new float3(worldPos.x, worldPos.y, worldPos.z);
+                em.SetComponentData(e, s);
+            }
         }
 
         private bool InBounds(int2 c) =>
