@@ -74,8 +74,7 @@ namespace GridFinder.Spawner
                     buffer.Add(new SpawnRequest
                     {
                         Position = spawnPos,
-                        Rotation = quaternion.identity,
-                        Scale = 0.1f
+                        Rotation = quaternion.identity
                     });
 
                     // Milestone 1 metric: count locally
