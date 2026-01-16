@@ -2225,15 +2225,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba424bbaf7064804bc27faa1ce37587e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  focusTarget: {fileID: 2126500227}
-  pivot: {x: 0, y: 0, z: 0}
-  orbitSpeed: 180
-  panSpeed: 1
-  zoomSpeed: 5
-  minDistance: 0.5
-  maxDistance: 100
+  targetTransform: {fileID: 2126500227}
+  focusOffset: {x: 0, y: 8, z: -8}
+  moveSpeed: 6
+  boostMultiplier: 4
+  verticalSpeed: 4
+  requireRmbForLook: 1
+  lookSensitivity: 180
   minPitch: 10
   maxPitch: 85
+  panSpeed: 1
+  zoomSpeed: 5
 --- !u!1 &1961392862
 GameObject:
   m_ObjectHideFlags: 0
