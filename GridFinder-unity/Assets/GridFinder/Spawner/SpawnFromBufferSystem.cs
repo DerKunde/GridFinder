@@ -40,7 +40,7 @@ namespace GridFinder.Spawner
                 var r = requests[i];
                 var spawned = ecb.Instantiate(prefab);
 
-                ecb.SetComponent(spawned, LocalTransform.FromPositionRotation(r.Position, r.Rotation));
+                ecb.SetComponent(spawned, LocalTransform.FromPositionRotationScale(r.Position, r.Rotation, r.Scale));
             }
 
             requests.Clear();
