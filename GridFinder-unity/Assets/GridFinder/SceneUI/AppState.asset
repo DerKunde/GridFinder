@@ -9,14 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1fc02fed63ce45b598a2a1ca8a1eea0f, type: 3}
-  m_Name: SmallTestGrid
+  m_Script: {fileID: 11500000, guid: e239380b98ae43d7ae78c9c2eebf150b, type: 3}
+  m_Name: AppState
   m_EditorClassIdentifier: 
-  originWorld:
-    x: -5
-    y: -1.110223e-16
-    z: -5
-  cellSize: 0.15
-  sizeInCells:
-    x: 66
-    y: 66
