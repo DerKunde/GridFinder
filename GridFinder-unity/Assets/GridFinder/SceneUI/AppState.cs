@@ -21,5 +21,6 @@ namespace GridFinder.UI
         // "Speed" metric (simple + useful): fps and/or frame time
         public readonly ReactiveProperty<float> Fps = new(0f);
         public readonly ReactiveProperty<float> FrameMs = new(0f);
+        
     }
 }
