@@ -7,6 +7,13 @@
       "dependencies": {},
       "hash": "34432703a177c97631a4eb1d908f086037c67969"
     },
+    "com.gustavopsantos.reflex": {
+      "version": "https://github.com/gustavopsantos/reflex.git?path=/Assets/Reflex/#14.0.0",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "7860febed99b82ca2dc273ca621c13965dc497a2"
+    },
     "com.unity.ai.navigation": {
       "version": "2.0.7",
       "depth": 0,

@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: SmallTestGrid
   m_EditorClassIdentifier: 
   originWorld:
-    x: -0.4717369
-    y: -10.05484
-    z: 0.63177395
+    x: -5
+    y: -1.110223e-16
+    z: -5
   cellSize: 0.15
   sizeInCells:
     x: 66

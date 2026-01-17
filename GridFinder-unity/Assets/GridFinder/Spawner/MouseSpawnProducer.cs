@@ -43,7 +43,7 @@ namespace GridFinder.Spawner
             }
 
             // Keep LMB reserved for gameplay click
-            if (!Input.GetMouseButtonDown(0))
+            if (!UnityEngine.Input.GetMouseButtonDown(0))
                 return;
 
             if (!cam) cam = UnityEngine.Camera.main;
@@ -51,7 +51,7 @@ namespace GridFinder.Spawner
 
             // If later you want to ignore clicks on UI, add EventSystem check here.
 
-            var ray = cam.ScreenPointToRay(Input.mousePosition);
+            var ray = cam.ScreenPointToRay(UnityEngine.Input.mousePosition);
             if (!Physics.Raycast(ray, out var hit, 500f, floorMask, QueryTriggerInteraction.Ignore))
                 return;
 
