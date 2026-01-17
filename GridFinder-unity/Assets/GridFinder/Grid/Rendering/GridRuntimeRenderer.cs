@@ -1,26 +1,50 @@
-﻿using Unity.Mathematics;
+﻿using Reflex.Attributes;
+using R3;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace GridFinder.Grid
 {
     public sealed class GridRuntimeRenderer : MonoBehaviour
     {
-        [Header("Source")]
-        [SerializeField] private GridConfig grid = null!;
-        [SerializeField] private Renderer floorRenderer = null!;
-
         [Header("Rendering")]
-        [SerializeField] private Material lineMaterial = null!;
         [SerializeField] private float lineWidth = 0.01f;
         [SerializeField] private float yOffset = 0.01f;
 
-        [Header("Lifecycle")]
-        [SerializeField] private bool rebuildOnEnable = true;
+        [Tooltip("Optional. If null, a URP Unlit material will be created at runtime.")]
+        [SerializeField] private Material? lineMaterialOverride;
 
-        private void OnEnable()
+        [Inject] private readonly GridService grid = null!;
+        [Inject] private readonly GridRoot gridRoot = null!;
+
+        private Material lineMaterial = null!;
+        private readonly CompositeDisposable d = new();
+
+        private void Awake()
         {
-            if (rebuildOnEnable)
-                Rebuild();
+            lineMaterial = lineMaterialOverride != null
+                ? lineMaterialOverride
+                : CreateDefaultLineMaterial();
+        }
+
+        private void Start()
+        {
+            if (grid == null || gridRoot == null)
+            {
+                Debug.LogWarning("[GridRuntimeRenderer] Missing injected dependencies. No grid will be rendered.");
+                return;
+            }
+
+            grid.Changed
+                .Subscribe(_ => Rebuild())
+                .AddTo(d);
+
+            Rebuild();
+        }
+
+        private void OnDisable()
+        {
+            d.Clear();
         }
 
         [ContextMenu("Rebuild Grid")]
@@ -28,28 +52,24 @@ namespace GridFinder.Grid
         {
             ClearChildren();
 
-            if (!grid || !floorRenderer || !lineMaterial)
-                return;
-
-            var cs = grid.cellSize;
+            var cs = grid.CellSize;
             if (cs <= 0.0001f)
                 return;
 
-            var bounds = floorRenderer.bounds;
+            var origin = grid.OriginWorld;
+            var w = math.max(1, grid.SizeInCells.x);
+            var h = math.max(1, grid.SizeInCells.y);
 
-            var origin = new float3(bounds.min.x, bounds.min.y + yOffset, bounds.min.z);
-            var sizeWorld = new float2(bounds.size.x, bounds.size.z);
-
-            var w = math.max(1, (int)math.floor(sizeWorld.x / cs));
-            var h = math.max(1, (int)math.floor(sizeWorld.y / cs));
+            var floorY = gridRoot.FloorTransform.position.y;
+            var y = floorY + yOffset;
 
             // Vertical lines (parallel to Z)
             for (int x = 0; x <= w; x++)
             {
                 var xw = origin.x + x * cs;
                 CreateLine(
-                    new Vector3(xw, origin.y, origin.z),
-                    new Vector3(xw, origin.y, origin.z + h * cs));
+                    new Vector3(xw, y, origin.z),
+                    new Vector3(xw, y, origin.z + h * cs));
             }
 
             // Horizontal lines (parallel to X)
@@ -57,8 +77,8 @@ namespace GridFinder.Grid
             {
                 var zw = origin.z + z * cs;
                 CreateLine(
-                    new Vector3(origin.x, origin.y, zw),
-                    new Vector3(origin.x + w * cs, origin.y, zw));
+                    new Vector3(origin.x, y, zw),
+                    new Vector3(origin.x + w * cs, y, zw));
             }
         }
 
@@ -86,12 +106,13 @@ namespace GridFinder.Grid
         private void ClearChildren()
         {
             for (int i = transform.childCount - 1; i >= 0; i--)
-            {
-                if (Application.isPlaying)
-                    Destroy(transform.GetChild(i).gameObject);
-                else
-                    DestroyImmediate(transform.GetChild(i).gameObject);
-            }
+                Destroy(transform.GetChild(i).gameObject);
+        }
+
+        private static Material CreateDefaultLineMaterial()
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            return shader != null ? new Material(shader) : new Material(Shader.Find("Sprites/Default"));
         }
     }
 }
