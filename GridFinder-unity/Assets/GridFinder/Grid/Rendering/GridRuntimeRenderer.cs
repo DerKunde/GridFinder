@@ -15,13 +15,14 @@ namespace GridFinder.Grid
         [SerializeField] private Material? lineMaterialOverride;
 
         [Inject] private readonly GridService grid = null!;
-        [Inject] private readonly GridRoot gridRoot = null!;
+        private GridRoot gridRoot = null!;
 
         private Material lineMaterial = null!;
         private readonly CompositeDisposable d = new();
 
         private void Awake()
         {
+            gridRoot = GetComponent<GridRoot>();
             lineMaterial = lineMaterialOverride != null
                 ? lineMaterialOverride
                 : CreateDefaultLineMaterial();
