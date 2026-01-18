@@ -10,7 +10,7 @@ namespace GridFinder.Installation
     public sealed class AppInstaller : MonoBehaviour, IInstaller
     {
         [Header("Prefabs")]
-        [SerializeField] private GridRoot gridPrefab = null!;
+        [SerializeField] private GameObject gridPrefab = null!;
 
         [Header("Initial Grid Params")]
         [SerializeField] private Vector2 worldSizeXZ = new(10f, 10f);
@@ -38,19 +38,6 @@ namespace GridFinder.Installation
                 container => gridRootFactory.Create(container),
                 Lifetime.Singleton, Resolution.Eager
             );
-        }
-
-        private static void ApplyFloor(GridSettings settings, GridRoot root)
-        {
-            var size = settings.WorldSizeXZ.Value;
-            var center = settings.CenterWorld.Value;
-
-            // Root at center
-            root.transform.position = new Vector3(center.x, center.y, center.z);
-
-            // IMPORTANT:
-            // If your Floor is a Quad rotated X=90, its local X/Y correspond to world X/Z.
-            root.FloorTransform.localScale = new Vector3(size.x, size.y, 1f);
         }
     }
 }

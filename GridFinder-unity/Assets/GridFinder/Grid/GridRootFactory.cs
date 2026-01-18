@@ -12,14 +12,14 @@ namespace GridFinder.Grid
     /// </summary>
     public sealed class GridRootFactory
     {
-        private readonly GridRoot prefab;
+        private readonly GameObject prefab;
         private readonly GridSettings settings;
 
         private readonly CompositeDisposable d = new();
 
         public GridRoot? Instance { get; private set; }
 
-        public GridRootFactory(GridRoot prefab, GridSettings settings)
+        public GridRootFactory(GameObject prefab, GridSettings settings)
         {
             this.prefab = prefab;
             this.settings = settings;
@@ -37,10 +37,14 @@ namespace GridFinder.Grid
             if (Instance != null)
                 return Instance;
 
-            var gridRoot = Object.Instantiate(prefab);
-            gridRoot.name = "GridRoot";
-            gridRoot.gameObject.SetActive(false);
+            var go = Object.Instantiate(prefab);
+            go.name = "GridRoot";
 
+            Debug.Log($"[GridRootFactory] Instantiated '{go.name}' children={go.transform.childCount}");
+            for (int i = 0; i < go.transform.childCount; i++)
+                Debug.Log($"  child[{i}] = {go.transform.GetChild(i).name} active={go.transform.GetChild(i).gameObject.activeSelf}");
+            
+            var gridRoot = go.GetComponent<GridRoot>();
             Apply(settings, gridRoot);
 
             // Inject recursively using THIS container (NOT scene.GetSceneContainer())
@@ -58,15 +62,32 @@ namespace GridFinder.Grid
 
         private static void Apply(GridSettings s, GridRoot root)
         {
-            var size = s.WorldSizeXZ.Value;   // float2 (x,z)
-            var center = s.CenterWorld.Value; // float3
+            var size = s.WorldSizeXZ.Value;
+            var center = s.CenterWorld.Value;
 
-            // Root sits at center
             root.transform.position = new Vector3(center.x, center.y, center.z);
 
-            // If Floor is a Quad rotated X=90, its local X/Y correspond to world X/Z.
-            // So we scale local X by size.x and local Y by size.z.
+            if (!root.FloorTransform)
+            {
+                Debug.LogError("[GridRootFactory] FloorTransform is not assigned on GridRoot.");
+                return;
+            }
+
+            // Ensure the floor sits at the root
+            root.FloorTransform.localPosition = Vector3.zero;
+            root.FloorTransform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+
+            // Quad rotated X=90: local X/Y -> world X/Z
             root.FloorTransform.localScale = new Vector3(size.x, size.y, 1f);
+
+            // Optional but useful: ensure renderer enabled
+            if (root.FloorRenderer != null)
+                root.FloorRenderer.enabled = true;
+
+            // Ensure correct raycast layer
+            var layer = LayerMask.NameToLayer("GridFloor");
+            if (layer >= 0)
+                root.FloorTransform.gameObject.layer = layer;
         }
     }
 }
