@@ -70,6 +70,25 @@ namespace GridFinder.Grid
                 y,
                 OriginWorld.z + cell.y * CellSize);
         }
+        
+        public float3 CellToWorld(int2 cell)
+        {
+            // cell (0,0) -> bottom-left of grid in world space
+            var origin = settings.CenterWorld.Value
+                         - new float3(
+                             settings.WorldSizeXZ.Value.x * 0.5f,
+                             0f,
+                             settings.WorldSizeXZ.Value.y * 0.5f
+                         );
+
+            var halfCell = settings.CellSize.Value * 0.5f;
+
+            return origin + new float3(
+                cell.x * settings.CellSize.Value + halfCell,
+                0f,
+                cell.y * settings.CellSize.Value + halfCell
+            );
+        }
 
         private int2 Clamp(int2 cell)
         {
