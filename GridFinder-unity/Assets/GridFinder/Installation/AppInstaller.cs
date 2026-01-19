@@ -1,7 +1,10 @@
 ﻿using GridFinder.Grid;
+using GridFinder.GridInput;
+using GridFinder.Visuals;
 using Reflex.Core;
 using Reflex.Enums;
 using Unity.Mathematics;
+using UnityEditor.EditorTools;
 using UnityEngine;
 using Resolution = Reflex.Enums.Resolution;
 
@@ -11,6 +14,7 @@ namespace GridFinder.Installation
     {
         [Header("Prefabs")]
         [SerializeField] private GameObject gridPrefab = null!;
+        [SerializeField] private GameObject gridFeedbackPrefab = null!;
 
         [Header("Initial Grid Params")]
         [SerializeField] private Vector2 worldSizeXZ = new(10f, 10f);
@@ -36,6 +40,19 @@ namespace GridFinder.Installation
             // Create GridRoot via factory using the container (Eager so it spawns immediately)
             builder.RegisterFactory(
                 container => gridRootFactory.Create(container),
+                Lifetime.Singleton, Resolution.Eager
+            );
+            
+            builder.RegisterSingleton<GridPointerState>(Resolution.Eager);
+            builder.RegisterSingleton<ToolModeState>(Resolution.Eager);
+
+            builder.RegisterValue(UnityEngine.Camera.main);
+
+            var feedbackFactory = new GridFeedbackFactory(gridFeedbackPrefab, gridRootFactory);
+            builder.RegisterValue(feedbackFactory);
+
+            builder.RegisterFactory(
+                c => feedbackFactory.Create(c),
                 Lifetime.Singleton, Resolution.Eager
             );
         }
