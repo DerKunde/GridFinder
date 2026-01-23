@@ -51,15 +51,15 @@ namespace GridFinder.Camera
         void Update()
         {
             // Focus
-            if (UnityEngine.Input.GetKeyDown(KeyCode.F))
+            if (Input.GetKeyDown(KeyCode.F))
                 FocusOnTarget();
 
             // Look (RMB freelook)
-            if (!requireRmbForLook || UnityEngine.Input.GetMouseButton(1))
+            if (!requireRmbForLook || Input.GetMouseButton(1))
                 UpdateLook();
 
             // Pan (MMB drag)
-            if (UnityEngine.Input.GetMouseButton(2))
+            if (Input.GetMouseButton(2))
                 UpdatePan();
 
             // Zoom (scroll)
@@ -89,8 +89,8 @@ namespace GridFinder.Camera
 
         private void UpdateLook()
         {
-            var dx = UnityEngine.Input.GetAxisRaw("Mouse X");
-            var dy = UnityEngine.Input.GetAxisRaw("Mouse Y");
+            var dx = Input.GetAxisRaw("Mouse X");
+            var dy = Input.GetAxisRaw("Mouse Y");
 
             yaw += dx * lookSensitivity * Time.unscaledDeltaTime;
             pitch -= dy * lookSensitivity * Time.unscaledDeltaTime;
@@ -105,24 +105,24 @@ namespace GridFinder.Camera
             var forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
             var right = Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized;
 
-            var inputX = (UnityEngine.Input.GetKey(KeyCode.D) ? 1f : 0f) - (UnityEngine.Input.GetKey(KeyCode.A) ? 1f : 0f);
-            var inputZ = (UnityEngine.Input.GetKey(KeyCode.W) ? 1f : 0f) - (UnityEngine.Input.GetKey(KeyCode.S) ? 1f : 0f);
+            var inputX = (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f);
+            var inputZ = (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f);
 
             var move = (right * inputX + forward * inputZ);
 
             // Vertical (optional)
-            var inputY = (UnityEngine.Input.GetKey(KeyCode.E) ? 1f : 0f) - (UnityEngine.Input.GetKey(KeyCode.Q) ? 1f : 0f);
+            var inputY = (Input.GetKey(KeyCode.E) ? 1f : 0f) - (Input.GetKey(KeyCode.Q) ? 1f : 0f);
             move += Vector3.up * (inputY * (verticalSpeed / Mathf.Max(0.0001f, moveSpeed)));
 
-            var speed = moveSpeed * (UnityEngine.Input.GetKey(KeyCode.LeftShift) ? boostMultiplier : 1f);
+            var speed = moveSpeed * (Input.GetKey(KeyCode.LeftShift) ? boostMultiplier : 1f);
 
             transform.position += move * (speed * Time.unscaledDeltaTime);
         }
 
         private void UpdatePan()
         {
-            var dx = UnityEngine.Input.GetAxisRaw("Mouse X");
-            var dy = UnityEngine.Input.GetAxisRaw("Mouse Y");
+            var dx = Input.GetAxisRaw("Mouse X");
+            var dy = Input.GetAxisRaw("Mouse Y");
 
             // Screen-space pan: move opposite to mouse drag
             // Scale by distance to target if available (more editor-like)
@@ -142,7 +142,7 @@ namespace GridFinder.Camera
 
         private void UpdateZoom()
         {
-            var scroll = UnityEngine.Input.mouseScrollDelta.y;
+            var scroll = Input.mouseScrollDelta.y;
             if (Mathf.Abs(scroll) < 0.0001f)
                 return;
 
