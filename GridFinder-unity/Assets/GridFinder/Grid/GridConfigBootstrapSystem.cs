@@ -4,53 +4,42 @@ using Unity.Mathematics;
 
 namespace GridFinder.Grid
 {
-    /// <summary>
-    /// Creates and initializes the GridConfig ECS singleton from GridSettings.
-    /// Runs once on startup.
-    /// </summary>
     [BurstCompile]
     public partial struct GridConfigBootstrapSystem : ISystem
     {
-        public void OnCreate(ref SystemState state)
-        {
-            // Run once
-            state.RequireForUpdate<GridConfigBootstrapTag>();
-        }
-
         public void OnUpdate(ref SystemState state)
         {
-            var em = state.EntityManager;
-
+            // If already created, stop
             if (SystemAPI.HasSingleton<GridConfig>())
             {
                 state.Enabled = false;
                 return;
             }
 
-            // Read GridSettings from managed world
-            var settings = GridSettings.Instance; // see note below
+            var settings = GridSettings.Instance;
+            if (settings == null)
+                return; // wait until AppInstaller created settings
 
-            var sizeInCells = new int2(
-                (int)math.round(settings.WorldSizeXZ.Value.x / settings.CellSize.Value),
-                (int)math.round(settings.WorldSizeXZ.Value.y / settings.CellSize.Value)
+            var sizeInCells = settings.GridSizeInCells.Value;
+            var cs = math.max(0.0001f, settings.CellSize.Value);
+            var center = settings.CenterWorld.Value;
+
+            var origin = center - new float3(
+                sizeInCells.x * cs * 0.5f,
+                0f,
+                sizeInCells.y * cs * 0.5f
             );
 
-            var entity = em.CreateEntity(typeof(GridConfig));
-            em.SetComponentData(entity, new GridConfig
+            var e = state.EntityManager.CreateEntity(typeof(GridConfig));
+            state.EntityManager.SetComponentData(e, new GridConfig
             {
                 Size = sizeInCells,
-                CellSize = settings.CellSize.Value,
-                Origin = settings.CenterWorld.Value -
-                         new float3(sizeInCells.x, 0, sizeInCells.y) * settings.CellSize.Value * 0.5f,
+                CellSize = cs,
+                Origin = origin,
                 Version = 1u
             });
 
             state.Enabled = false;
         }
     }
-
-    /// <summary>
-    /// Dummy tag to ensure controlled startup.
-    /// </summary>
-    public struct GridConfigBootstrapTag : IComponentData { }
 }

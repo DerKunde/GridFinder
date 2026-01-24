@@ -58,8 +58,8 @@ namespace GridFinder.Grid
                 return;
 
             var origin = grid.OriginWorld;
-            var w = math.max(1, grid.SizeInCells.x);
-            var h = math.max(1, grid.SizeInCells.y);
+            var w = grid.SizeInCells.x;
+            var h = grid.SizeInCells.y;
 
             var floorY = gridRoot.FloorTransform.position.y;
             var y = floorY + yOffset;

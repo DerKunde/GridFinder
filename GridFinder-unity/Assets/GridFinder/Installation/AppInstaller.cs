@@ -17,14 +17,14 @@ namespace GridFinder.Installation
         [SerializeField] private GameObject gridFeedbackPrefab = null!;
 
         [Header("Initial Grid Params")]
-        [SerializeField] private Vector2 worldSizeXZ = new(10f, 10f);
+        [SerializeField] private int2 gridSizeInCells = default;
         [SerializeField] private float cellSize = 0.01f;
         [SerializeField] private Vector3 centerWorld = Vector3.zero;
 
         public void InstallBindings(ContainerBuilder builder)
         {
             var settings = new GridSettings();
-            settings.WorldSizeXZ.Value = new float2(worldSizeXZ.x, worldSizeXZ.y);
+            settings.GridSizeInCells.Value = gridSizeInCells;
             settings.CellSize.Value = cellSize;
             settings.CenterWorld.Value = (float3)centerWorld;
             builder.RegisterValue(settings);
@@ -34,8 +34,6 @@ namespace GridFinder.Installation
             gridServiceGo.transform.SetParent(transform, worldPositionStays: false);
             var gridService = gridServiceGo.AddComponent<GridService>();
             builder.RegisterValue(gridService);
-            
-            gridServiceGo.AddComponent<GridConfigInitializer>();
 
             // ✅ Register GridRootFactory itself (so other scripts can inject it)
             var gridRootFactory = new GridRootFactory(gridPrefab, gridService);

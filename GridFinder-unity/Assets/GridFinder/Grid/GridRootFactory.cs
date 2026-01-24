@@ -93,7 +93,7 @@ namespace GridFinder.Grid
             // Apply transform to floor
             root.ApplyFloorLayout(
                 worldCenter: new Vector3(worldCenter.x, worldCenter.y, worldCenter.z),
-                worldSizeXZ: new Vector2(worldSize.x, worldSize.y),
+                worldSizeXZ: new Vector2(worldSize.x / 10, worldSize.y / 10),
                 y: y
             );
 
@@ -105,8 +105,6 @@ namespace GridFinder.Grid
             // Optional but useful: ensure renderer enabled
             if (root.FloorRenderer != null)
                 root.FloorRenderer.enabled = true;
-            Debug.LogError("[GridRootFactory] Config applied.");
-
         }
     }
 }
