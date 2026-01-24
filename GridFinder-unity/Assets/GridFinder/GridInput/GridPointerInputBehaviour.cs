@@ -1,10 +1,15 @@
 ﻿using GridFinder.Grid;
+using GridFinder.Grid.GridHelper;
 using Reflex.Attributes;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace GridFinder.GridInput
 {
+    /// <summary>
+    /// Reads pointer input (mouse for now) and writes hover/drag state into GridPointerState.
+    /// Updated to use GridService + GridMath + GridConfig (cell center convention).
+    /// </summary>
     public sealed class GridPointerInputBehaviour : MonoBehaviour
     {
         private const string FloorLayerName = "GridFloor";
@@ -34,7 +39,16 @@ namespace GridFinder.GridInput
             if (floorMask == 0 || cam == null || grid == null)
                 return;
 
-            if (!TryGetHoveredCell(out var cell, out var floorY))
+            // Need config to map world -> cell reliably
+            if (!grid.HasConfig)
+            {
+                pointer.HasHover.Value = false;
+                pointer.IsDragging.Value = false;
+                isDragging = false;
+                return;
+            }
+
+            if (!TryGetHoveredCell(out var cell, out _))
             {
                 pointer.HasHover.Value = false;
                 pointer.IsDragging.Value = false;
@@ -47,7 +61,7 @@ namespace GridFinder.GridInput
 
             if (toolMode.Interaction == ToolInteraction.Click)
             {
-                // for this ticket we only need hover feedback
+                // For now we only need hover feedback
                 pointer.IsDragging.Value = false;
                 isDragging = false;
                 return;
@@ -87,8 +101,18 @@ namespace GridFinder.GridInput
             if (!Physics.Raycast(ray, out var hit, maxDistance, floorMask, QueryTriggerInteraction.Ignore))
                 return false;
 
+            var cfg = grid.Config;
+
+            // Convert world -> cell using GridMath + config
+            var world = new float3(hit.point.x, hit.point.y, hit.point.z);
+            var c = GridMath.WorldToCell(world, cfg);
+
+            // Treat "no hover" if outside grid bounds
+            if (!GridMath.IsInside(c, cfg))
+                return false;
+
             floorY = hit.point.y;
-            cell = grid.WorldToCell((float3)hit.point);
+            cell = c;
             return true;
         }
     }

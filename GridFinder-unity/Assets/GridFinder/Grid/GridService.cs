@@ -1,100 +1,76 @@
 ﻿using R3;
+using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace GridFinder.Grid
 {
-    public sealed class GridService
+    public sealed class GridService : MonoBehaviour
     {
-        private readonly GridSettings settings;
+        public float CellSize { get; private set; }
+        public Vector3 OriginWorld { get; private set; }
+        public Vector2Int SizeInCells { get; private set; }
 
-        public float3 OriginWorld { get; private set; }
-        public int2 SizeInCells { get; private set; }
-        public float CellSize => settings.CellSize.Value;
+        public GridConfig Config { get; private set; }
+        public bool HasConfig { get; private set; }
 
-        // Fires whenever derived grid properties change
         public readonly Subject<Unit> Changed = new();
 
-        public GridService(GridSettings settings)
+        private EntityQuery gridConfigQuery;
+        private bool queryCreated;
+
+        private uint lastVersion = uint.MaxValue; // force first update
+
+        private void Awake()
         {
-            this.settings = settings;
-
-            // Recompute whenever any setting changes
-            settings.WorldSizeXZ.Subscribe(_ => Recompute());
-            settings.CellSize.Subscribe(_ => Recompute());
-            settings.CenterWorld.Subscribe(_ => Recompute());
-
-            Recompute();
+            TryCreateQuery();
         }
 
-        public void Recompute()
+        private void Update()
         {
-            var cs = math.max(0.0001f, settings.CellSize.Value);
-            var size = settings.WorldSizeXZ.Value;
-            var center = settings.CenterWorld.Value;
+            TryCreateQuery();
+            if (!queryCreated)
+                return;
 
-            // Origin is min corner in XZ
-            OriginWorld = new float3(
-                center.x - size.x * 0.5f,
-                center.y,
-                center.z - size.y * 0.5f);
+            if (!gridConfigQuery.TryGetSingleton(out GridConfig cfg))
+            {
+                HasConfig = false;
+                return;
+            }
 
-            SizeInCells = new int2(
-                math.max(1, (int)math.floor(size.x / cs)),
-                math.max(1, (int)math.floor(size.y / cs)));
+            HasConfig = true;
+            Config = cfg;
+
+            if (cfg.Version == lastVersion)
+                return;
+
+            lastVersion = cfg.Version;
+
+            CellSize = cfg.CellSize;
+            OriginWorld = new Vector3(cfg.Origin.x, cfg.Origin.y, cfg.Origin.z);
+            SizeInCells = new Vector2Int(cfg.Size.x, cfg.Size.y);
 
             Changed.OnNext(Unit.Default);
         }
 
-        public int2 WorldToCell(float3 world)
+        private void TryCreateQuery()
         {
-            var localX = (world.x - OriginWorld.x) / CellSize;
-            var localZ = (world.z - OriginWorld.z) / CellSize;
-            var cell = (int2)math.floor(new float2(localX, localZ));
-            return Clamp(cell);
+            if (queryCreated)
+                return;
+
+            var world = World.DefaultGameObjectInjectionWorld;
+            if (world == null)
+                return;
+
+            gridConfigQuery = world.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<GridConfig>());
+            queryCreated = true;
         }
 
-        public float3 CellToWorldCenter(int2 cell, float y)
+        private void OnDestroy()
         {
-            cell = Clamp(cell);
-            return new float3(
-                OriginWorld.x + (cell.x + 0.5f) * CellSize,
-                y,
-                OriginWorld.z + (cell.y + 0.5f) * CellSize);
-        }
-
-        public float3 CellToWorldMinCorner(int2 cell, float y)
-        {
-            cell = Clamp(cell);
-            return new float3(
-                OriginWorld.x + cell.x * CellSize,
-                y,
-                OriginWorld.z + cell.y * CellSize);
-        }
-        
-        public float3 CellToWorld(int2 cell)
-        {
-            // cell (0,0) -> bottom-left of grid in world space
-            var origin = settings.CenterWorld.Value
-                         - new float3(
-                             settings.WorldSizeXZ.Value.x * 0.5f,
-                             0f,
-                             settings.WorldSizeXZ.Value.y * 0.5f
-                         );
-
-            var halfCell = settings.CellSize.Value * 0.5f;
-
-            return origin + new float3(
-                cell.x * settings.CellSize.Value + halfCell,
-                0f,
-                cell.y * settings.CellSize.Value + halfCell
-            );
-        }
-
-        private int2 Clamp(int2 cell)
-        {
-            return new int2(
-                math.clamp(cell.x, 0, SizeInCells.x - 1),
-                math.clamp(cell.y, 0, SizeInCells.y - 1));
+            // Only dispose if we actually created it.
+            if (queryCreated)
+                gridConfigQuery.Dispose();
         }
     }
 }

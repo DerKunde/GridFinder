@@ -1,4 +1,5 @@
-﻿using Reflex.Core;
+﻿using GridFinder.Grid.GridHelper;
+using Reflex.Core;
 using Reflex.Injectors;
 using R3;
 using Unity.Mathematics;
@@ -7,22 +8,22 @@ using UnityEngine;
 namespace GridFinder.Grid
 {
     /// <summary>
-    /// Creates (and owns) a GridRoot prefab instance and keeps it in sync with GridSettings.
-    /// This replaces the old FloorFactory.
+    /// Creates (and owns) a GridRoot prefab instance and keeps it in sync with the ECS GridConfig.
     /// </summary>
     public sealed class GridRootFactory
     {
-        private readonly GameObject prefab;
-        private readonly GridSettings settings;
+        private const string FloorLayerName = "GridFloor";
 
+        private readonly GameObject prefab;
+        private readonly GridService grid; // NEW: bridge to GridConfig
         private readonly CompositeDisposable d = new();
 
         public GridRoot? Instance { get; private set; }
 
-        public GridRootFactory(GameObject prefab, GridSettings settings)
+        public GridRootFactory(GameObject prefab, GridService grid)
         {
             this.prefab = prefab;
-            this.settings = settings;
+            this.grid = grid;
         }
 
         public GridRoot Create(Container container)
@@ -33,26 +34,32 @@ namespace GridFinder.Grid
                 return null!;
             }
 
-            // If already created, reuse (prevents duplicates if called again)
             if (Instance != null)
                 return Instance;
 
             var go = Object.Instantiate(prefab);
             go.name = "GridRoot";
 
-            Debug.Log($"[GridRootFactory] Instantiated '{go.name}' children={go.transform.childCount}");
-            for (int i = 0; i < go.transform.childCount; i++)
-                Debug.Log($"  child[{i}] = {go.transform.GetChild(i).name} active={go.transform.GetChild(i).gameObject.activeSelf}");
-            
             var gridRoot = go.GetComponent<GridRoot>();
-            Apply(settings, gridRoot);
+            if (gridRoot == null)
+            {
+                Debug.LogError("[GridRootFactory] Prefab is missing GridRoot component.");
+                return null!;
+            }
 
-            // Inject recursively using THIS container (NOT scene.GetSceneContainer())
+            // Ensure references are set (your updated GridRoot has ResolveReferences)
+            gridRoot.ResolveReferences();
+
+            // Inject recursively using THIS container (NOT scene container)
             GameObjectInjector.InjectRecursive(gridRoot.gameObject, container);
 
-            // Keep it updated when settings change
-            settings.WorldSizeXZ.Subscribe(_ => Apply(settings, gridRoot)).AddTo(d);
-            settings.CenterWorld.Subscribe(_ => Apply(settings, gridRoot)).AddTo(d);
+            // Apply initial layout if config is already available
+            TryApplyFromConfig(gridRoot);
+
+            // Keep it updated when GridConfig changes
+            grid.Changed
+                .Subscribe(_ => TryApplyFromConfig(gridRoot))
+                .AddTo(d);
 
             gridRoot.gameObject.SetActive(true);
 
@@ -60,34 +67,46 @@ namespace GridFinder.Grid
             return gridRoot;
         }
 
-        private static void Apply(GridSettings s, GridRoot root)
+        private void TryApplyFromConfig(GridRoot root)
         {
-            var size = s.WorldSizeXZ.Value;
-            var center = s.CenterWorld.Value;
+            if (grid == null || !grid.HasConfig)
+                return;
 
-            root.transform.position = new Vector3(center.x, center.y, center.z);
+            ApplyFromConfig(grid.Config, root);
+        }
 
+        private static void ApplyFromConfig(in GridConfig cfg, GridRoot root)
+        {
             if (!root.FloorTransform)
             {
                 Debug.LogError("[GridRootFactory] FloorTransform is not assigned on GridRoot.");
                 return;
             }
 
-            // Ensure the floor sits at the root
-            root.FloorTransform.localPosition = Vector3.zero;
-            root.FloorTransform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            // --- Compute world size + center from config ---
+            var worldSize = GridMath.WorldSizeXZ(cfg);    // float2 (widthX, heightZ)
+            var worldCenter = GridMath.WorldCenter(cfg);  // float3
 
-            // Quad rotated X=90: local X/Y -> world X/Z
-            root.FloorTransform.localScale = new Vector3(size.x, size.y, 1f);
+            // Decide Y: keep current floor Y (so you can move it in prefab), but align XZ to grid
+            var y = root.FloorTransform.position.y;
+
+            // Apply transform to floor
+            root.ApplyFloorLayout(
+                worldCenter: new Vector3(worldCenter.x, worldCenter.y, worldCenter.z),
+                worldSizeXZ: new Vector2(worldSize.x, worldSize.y),
+                y: y
+            );
+
+            // Ensure correct raycast layer
+            var layer = LayerMask.NameToLayer(FloorLayerName);
+            if (layer >= 0)
+                root.FloorTransform.gameObject.layer = layer;
 
             // Optional but useful: ensure renderer enabled
             if (root.FloorRenderer != null)
                 root.FloorRenderer.enabled = true;
+            Debug.LogError("[GridRootFactory] Config applied.");
 
-            // Ensure correct raycast layer
-            var layer = LayerMask.NameToLayer("GridFloor");
-            if (layer >= 0)
-                root.FloorTransform.gameObject.layer = layer;
         }
     }
 }

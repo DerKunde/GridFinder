@@ -1,8 +1,10 @@
-﻿using Reflex.Attributes;
+﻿// GridFeedbackRendererBehaviour.cs
+using Reflex.Attributes;
 using R3;
 using Unity.Mathematics;
 using UnityEngine;
 using GridFinder.Grid;
+using GridFinder.Grid.GridHelper;
 using GridFinder.GridInput;
 
 namespace GridFinder.Visuals
@@ -31,6 +33,9 @@ namespace GridFinder.Visuals
         private Material lineMat = null!;
         private readonly CompositeDisposable d = new();
 
+        private GridConfig cfg;
+        private bool hasCfg;
+
         private void Awake()
         {
             hoverMat = hoverMaterialOverride != null ? hoverMaterialOverride : CreateUnlitMaterial();
@@ -45,7 +50,24 @@ namespace GridFinder.Visuals
 
         private void Start()
         {
-            // Hover
+            RefreshConfig();
+
+            // Refresh cached config when GridConfig changes
+            grid.Changed
+                .Subscribe(_ =>
+                {
+                    RefreshConfig();
+
+                    // redraw if currently active
+                    if (pointer.HasHover.Value)
+                        UpdateHover(pointer.HoveredCell.Value);
+
+                    if (pointer.IsDragging.Value)
+                        DrawRect(pointer.DragStartCell.Value, pointer.DragEndCell.Value);
+                })
+                .AddTo(d);
+
+            // Hover show/hide
             pointer.HasHover
                 .Subscribe(has =>
                 {
@@ -54,6 +76,7 @@ namespace GridFinder.Visuals
                 })
                 .AddTo(d);
 
+            // Hover update
             pointer.HoveredCell
                 .Subscribe(cell =>
                 {
@@ -62,12 +85,12 @@ namespace GridFinder.Visuals
                 })
                 .AddTo(d);
 
-            // Drag rect
+            // Drag rect show/hide
             pointer.IsDragging
                 .Subscribe(isDrag => SetRectVisible(isDrag))
                 .AddTo(d);
 
-            // Update rect while dragging or when end changes
+            // Drag rect update (end changes)
             pointer.DragEndCell
                 .Subscribe(_ =>
                 {
@@ -82,36 +105,60 @@ namespace GridFinder.Visuals
             d.Clear();
         }
 
+        private void RefreshConfig()
+        {
+            hasCfg = grid != null && grid.HasConfig;
+            if (!hasCfg)
+                return;
+
+            cfg = grid.Config;
+            hasCfg = cfg.CellSize > 0.0001f && cfg.Size.x > 0 && cfg.Size.y > 0;
+        }
+
         private void UpdateHover(int2 cell)
         {
-            var floorY = GetFloorY();
-            var pos = grid.CellToWorldCenter(cell, floorY + hoverYOffset);
+            if (!hasCfg) return;
+            if (!GridMath.IsInside(cell, cfg)) return;
 
-            hoverQuad.position = (Vector3)pos;
+            var y = GetFloorY() + hoverYOffset;
 
-            var s = grid.CellSize * hoverInset;
-            // Quad is rotated to lie on XZ, so scale X/Y
+            // Cell refers to its center
+            var pos = GridMath.CellToWorldCenter(cell, cfg);
+            pos.y = y;
+
+            hoverQuad.position = new Vector3(pos.x, pos.y, pos.z);
+
+            var s = cfg.CellSize * hoverInset;
             hoverQuad.localScale = new Vector3(s, s, 1f);
         }
 
         private void DrawRect(int2 a, int2 b)
         {
+            if (!hasCfg) return;
+
             var min = new int2(math.min(a.x, b.x), math.min(a.y, b.y));
             var max = new int2(math.max(a.x, b.x), math.max(a.y, b.y));
 
+            // Clamp to bounds
+            min = ClampCell(min);
+            max = ClampCell(max);
+
             var y = GetFloorY() + rectYOffset;
 
-            // World corners from grid origin/cell size
-            var minCorner = grid.CellToWorldMinCorner(min, y);
+            // Rectangle corners from grid origin/cell size:
+            // minCorner: min cell corner
+            // maxCorner: corner after max cell (inclusive) => (max + 1)
+            var minCorner = CellToWorldMinCorner(min, y);
             var maxCorner = new float3(
-                grid.OriginWorld.x + (max.x + 1) * grid.CellSize,
+                cfg.Origin.x + (max.x + 1) * cfg.CellSize,
                 y,
-                grid.OriginWorld.z + (max.y + 1) * grid.CellSize);
+                cfg.Origin.z + (max.y + 1) * cfg.CellSize
+            );
 
-            var p0 = (Vector3)minCorner;                       // bottom-left
-            var p1 = new Vector3(maxCorner.x, y, minCorner.z); // bottom-right
-            var p2 = (Vector3)maxCorner;                       // top-right
-            var p3 = new Vector3(minCorner.x, y, maxCorner.z); // top-left
+            var p0 = new Vector3(minCorner.x, minCorner.y, minCorner.z);              // bottom-left
+            var p1 = new Vector3(maxCorner.x, y, minCorner.z);                        // bottom-right
+            var p2 = new Vector3(maxCorner.x, maxCorner.y, maxCorner.z);              // top-right
+            var p3 = new Vector3(minCorner.x, y, maxCorner.z);                        // top-left
 
             SetLine(bottom, p0, p1);
             SetLine(right,  p1, p2);
@@ -119,14 +166,30 @@ namespace GridFinder.Visuals
             SetLine(left,   p0, p3);
         }
 
+        private int2 ClampCell(int2 cell)
+        {
+            return new int2(
+                math.clamp(cell.x, 0, math.max(0, cfg.Size.x - 1)),
+                math.clamp(cell.y, 0, math.max(0, cfg.Size.y - 1))
+            );
+        }
+
+        private float3 CellToWorldMinCorner(int2 cell, float y)
+        {
+            return new float3(
+                cfg.Origin.x + cell.x * cfg.CellSize,
+                y,
+                cfg.Origin.z + cell.y * cfg.CellSize
+            );
+        }
+
         private float GetFloorY()
         {
-            // Prefer the actual spawned GridRoot floor Y
             var root = gridRootFactory.Instance;
             if (root != null && root.FloorTransform != null)
                 return root.FloorTransform.position.y;
 
-            return grid.OriginWorld.y;
+            return hasCfg ? cfg.Origin.y : 0f;
         }
 
         private Transform CreateHoverQuad()

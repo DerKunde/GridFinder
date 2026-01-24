@@ -18,7 +18,7 @@ namespace GridFinder.Installation
 
         [Header("Initial Grid Params")]
         [SerializeField] private Vector2 worldSizeXZ = new(10f, 10f);
-        [SerializeField] private float cellSize = 0.15f;
+        [SerializeField] private float cellSize = 0.01f;
         [SerializeField] private Vector3 centerWorld = Vector3.zero;
 
         public void InstallBindings(ContainerBuilder builder)
@@ -27,22 +27,27 @@ namespace GridFinder.Installation
             settings.WorldSizeXZ.Value = new float2(worldSizeXZ.x, worldSizeXZ.y);
             settings.CellSize.Value = cellSize;
             settings.CenterWorld.Value = (float3)centerWorld;
-
-            var gridService = new GridService(settings);
-
             builder.RegisterValue(settings);
-            builder.RegisterValue(gridService);
 
-            // Create the factory as a value (so it can hold the prefab reference)
-            var gridRootFactory = new GridRootFactory(gridPrefab, settings);
+            // GridService (bridge)
+            var gridServiceGo = new GameObject("GridService");
+            gridServiceGo.transform.SetParent(transform, worldPositionStays: false);
+            var gridService = gridServiceGo.AddComponent<GridService>();
+            builder.RegisterValue(gridService);
+            
+            gridServiceGo.AddComponent<GridConfigInitializer>();
+
+            // ✅ Register GridRootFactory itself (so other scripts can inject it)
+            var gridRootFactory = new GridRootFactory(gridPrefab, gridService);
             builder.RegisterValue(gridRootFactory);
 
-            // Create GridRoot via factory using the container (Eager so it spawns immediately)
+            // ✅ Eager-create GridRoot (Singleton instance) using the factory
             builder.RegisterFactory(
                 container => gridRootFactory.Create(container),
-                Lifetime.Singleton, Resolution.Eager
+                Lifetime.Singleton,
+                Resolution.Eager
             );
-            
+
             builder.RegisterSingleton<GridPointerState>(Resolution.Eager);
             builder.RegisterSingleton<ToolModeState>(Resolution.Eager);
 
@@ -53,7 +58,8 @@ namespace GridFinder.Installation
 
             builder.RegisterFactory(
                 c => feedbackFactory.Create(c),
-                Lifetime.Singleton, Resolution.Eager
+                Lifetime.Singleton,
+                Resolution.Eager
             );
         }
     }

@@ -1,4 +1,5 @@
 ﻿using GridFinder.Grid;
+using GridFinder.Grid.GridHelper;
 using GridFinder.GridInput;
 using Reflex.Attributes;
 using Unity.Mathematics;
@@ -6,10 +7,6 @@ using UnityEngine;
 
 namespace GridFinder.Spawner
 {
-    /// <summary>
-    /// Bridges grid pointer input (state-based) to the ECS spawn pipeline.
-    /// Listens for click interactions while hovering the grid and enqueues spawn commands.
-    /// </summary>
     public sealed class GridSpawnInputBridge : MonoBehaviour
     {
         [Inject] private readonly GridPointerState pointer = null!;
@@ -25,42 +22,54 @@ namespace GridFinder.Spawner
 
         private void Awake()
         {
-            writer = new SpawnCommandWriter(
-                Unity.Entities.World.DefaultGameObjectInjectionWorld
-            );
+            var world = Unity.Entities.World.DefaultGameObjectInjectionWorld;
+            if (world == null)
+            {
+                Debug.LogWarning("[GridSpawnInputBridge] Default ECS World not available. Disabling.");
+                enabled = false;
+                return;
+            }
 
+            writer = new SpawnCommandWriter(world);
             factory = new SpawnCommandFactory();
         }
 
         private void Update()
         {
-            // // We only react in Click mode
+            // We only react in Click mode (uncomment if desired)
             // if (toolMode.Interaction != ToolInteraction.Click)
             //     return;
 
-            // Only on mouse down
             if (!Input.GetMouseButtonDown(0))
                 return;
 
-            // Must be hovering a valid grid cell
+            if (!grid.HasConfig)
+                return;
+
             if (!pointer.HasHover.Value)
                 return;
 
+            var cfg = grid.Config;
             var cell = pointer.HoveredCell.Value;
 
-            // Convert cell -> world position
-            float3 worldPos = grid.CellToWorld(cell);
+            // Optional: ignore clicks outside bounds (if pointer could ever produce that)
+            if (!GridMath.IsInside(cell, cfg))
+                return;
+
+            var worldPos = GridMath.CellToWorldCenter(cell, cfg);
+
+            // Proper linear index
+            var gridCellIndex = cell.x + cell.y * cfg.Size.x;
 
             var intent = new SpawnIntent(
                 contentId: contentId,
                 worldPos: worldPos,
                 worldRot: quaternion.identity,
                 uniformScale: uniformScale,
-                gridCellIndex: 1
+                gridCellIndex: gridCellIndex
             );
 
-            SpawnCommandData cmd;
-            if (factory.TryCreate(in intent, out cmd))
+            if (factory.TryCreate(in intent, out SpawnCommandData cmd))
             {
                 writer.TryEnqueue(in cmd);
             }

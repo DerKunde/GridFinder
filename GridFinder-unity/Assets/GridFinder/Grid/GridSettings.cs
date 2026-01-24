@@ -5,13 +5,15 @@ namespace GridFinder.Grid
 {
     public sealed class GridSettings
     {
-        // World size of the floor/grid in XZ (e.g. 10x10)
-        public readonly ReactiveProperty<float2> WorldSizeXZ = new(new float2(10f, 10f));
+        public static GridSettings Instance { get; private set; } = null!;
 
-        // Cell size in world units (e.g. 0.15)
-        public readonly ReactiveProperty<float> CellSize = new(0.15f);
+        public readonly ReactiveProperty<float2> WorldSizeXZ = new();
+        public readonly ReactiveProperty<float> CellSize = new();
+        public readonly ReactiveProperty<float3> CenterWorld = new();
 
-        // Floor center position
-        public readonly ReactiveProperty<float3> CenterWorld = new(new float3(0f, 0f, 0f));
+        public GridSettings()
+        {
+            Instance = this;
+        }
     }
 }
