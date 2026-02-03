@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace GridFinder.UI
 {
-    public sealed class ChangeClickModeButton : MonoBehaviour
+    public sealed class ToolModeWriter : MonoBehaviour
     {
         [SerializeField] private AppState state = null!;
         [SerializeField] private Button spawnAgentButton = null!;

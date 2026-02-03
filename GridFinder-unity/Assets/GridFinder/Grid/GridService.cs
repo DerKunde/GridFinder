@@ -1,6 +1,5 @@
 ﻿using R3;
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace GridFinder.Grid
@@ -16,23 +15,23 @@ namespace GridFinder.Grid
 
         public readonly Subject<Unit> Changed = new();
 
-        private EntityQuery gridConfigQuery;
-        private bool queryCreated;
-
-        private uint lastVersion = uint.MaxValue; // force first update
-
-        private void Awake()
-        {
-            TryCreateQuery();
-        }
+        private uint lastVersion = uint.MaxValue;
 
         private void Update()
         {
-            TryCreateQuery();
-            if (!queryCreated)
+            var world = World.DefaultGameObjectInjectionWorld;
+            if (world == null)
+            {
+                HasConfig = false;
                 return;
+            }
 
-            if (!gridConfigQuery.TryGetSingleton(out GridConfig cfg))
+            var em = world.EntityManager;
+
+            // local query; disposed immediately during valid world lifetime
+            using var q = em.CreateEntityQuery(ComponentType.ReadOnly<GridConfig>());
+
+            if (!q.TryGetSingleton(out GridConfig cfg))
             {
                 HasConfig = false;
                 return;
@@ -51,26 +50,6 @@ namespace GridFinder.Grid
             SizeInCells = new Vector2Int(cfg.Size.x, cfg.Size.y);
 
             Changed.OnNext(Unit.Default);
-        }
-
-        private void TryCreateQuery()
-        {
-            if (queryCreated)
-                return;
-
-            var world = World.DefaultGameObjectInjectionWorld;
-            if (world == null)
-                return;
-
-            gridConfigQuery = world.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<GridConfig>());
-            queryCreated = true;
-        }
-
-        private void OnDestroy()
-        {
-            // Only dispose if we actually created it.
-            if (queryCreated)
-                gridConfigQuery.Dispose();
         }
     }
 }
