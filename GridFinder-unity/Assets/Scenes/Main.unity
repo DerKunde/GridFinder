@@ -201,7 +201,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 157506389}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1625974993}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &157506389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -322,7 +334,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 263435827}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1625974993}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &263435827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -443,7 +467,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 278315245}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1625974993}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &278315245
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1151,7 +1187,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 514297430}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1625974993}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &514297430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1844,7 +1892,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1178741509}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1625975001}
+        m_TargetAssemblyTypeName: GridFinder.GridInput.ToolModeWriter, Assembly-CSharp
+        m_MethodName: SetTargetMode
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1178741509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2297,7 +2357,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1340394490}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1625975001}
+        m_TargetAssemblyTypeName: GridFinder.GridInput.ToolModeWriter, Assembly-CSharp
+        m_MethodName: SpawnAgentMode
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
 --- !u!1 &1363237989
 GameObject:
   m_ObjectHideFlags: 0
@@ -2448,7 +2520,7 @@ GameObject:
   - component: {fileID: 1625974995}
   - component: {fileID: 1625974994}
   - component: {fileID: 1625974999}
-  - component: {fileID: 1625975000}
+  - component: {fileID: 1625975001}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -2573,7 +2645,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   state: {fileID: 11400000, guid: 412e04aa54b753740b53a50f261cb343, type: 2}
   smoothing: 0.15
---- !u!114 &1625975000
+--- !u!114 &1625975001
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2582,12 +2654,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1625974993}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2edbe6d0cbc484fa438e1125df8d60a, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a304bb89d684a3d9a64ec718cd824f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  state: {fileID: 11400000, guid: 412e04aa54b753740b53a50f261cb343, type: 2}
-  spawnAgentButton: {fileID: 1340394492}
-  setTargetButton: {fileID: 1178741508}
 --- !u!1 &1727545863
 GameObject:
   m_ObjectHideFlags: 0
@@ -3029,7 +3098,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1932952843}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1625975001}
+        m_TargetAssemblyTypeName: GridFinder.GridInput.ToolModeWriter, Assembly-CSharp
+        m_MethodName: SpawnWallMode
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1932952843
 MonoBehaviour:
   m_ObjectHideFlags: 0
