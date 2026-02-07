@@ -24,7 +24,7 @@ namespace GridFinder.GridInput
         }
 
         public void SetTargetMode()
-            => SetMode(ToolModeType.SetTarget, 0);
+            => SetMode(ToolModeType.SetTarget, -1);
 
         public void SpawnAgentMode(int contentId)
             => SetMode(ToolModeType.SpawnAgent, contentId);

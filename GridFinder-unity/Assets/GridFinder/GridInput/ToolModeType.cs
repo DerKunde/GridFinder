@@ -4,11 +4,10 @@ namespace GridFinder.GridInput
 {
     public enum ToolModeType : byte
     {
-        None = 0,
+        SpawnAgent = 0,
         SetTarget = 1,
-        SpawnAgent = 2,
-        SpawnWall = 3,
-        SetGridZone = 4
+        SpawnWall = 2,
+        SetGridZone = 3
     }
 
     /// <summary>

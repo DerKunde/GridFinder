@@ -8,5 +8,6 @@ namespace GridFinder.Spawner
         public float3 Position;
         public quaternion Rotation; // optional, aber direkt skalierbar
         public float Scale;
+        public int ContentID;
     }
 }

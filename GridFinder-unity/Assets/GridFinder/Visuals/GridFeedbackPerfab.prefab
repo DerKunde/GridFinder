@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2002029631502897488}
   - component: {fileID: 494551927585026348}
   - component: {fileID: 7587816779202397141}
+  - component: {fileID: 2883086939635819824}
   m_Layer: 0
   m_Name: GridFeedbackPerfab
   m_TagString: Untagged
@@ -64,3 +65,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxDistance: 500
+--- !u!114 &2883086939635819824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4061492604684719919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99ad74520de54a16b5f59a6c7069c21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

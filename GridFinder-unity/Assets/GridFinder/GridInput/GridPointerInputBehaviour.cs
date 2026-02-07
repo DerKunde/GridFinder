@@ -3,6 +3,7 @@ using GridFinder.Grid.GridHelper;
 using Reflex.Attributes;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace GridFinder.GridInput
 {
@@ -38,6 +39,13 @@ namespace GridFinder.GridInput
         {
             if (floorMask == 0 || cam == null || grid == null)
                 return;
+            
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                pointer.HasHover.Value = false;
+                pointer.IsDragging.Value = false;
+                return;
+            }
 
             // Need config to map world -> cell reliably
             if (!grid.HasConfig)

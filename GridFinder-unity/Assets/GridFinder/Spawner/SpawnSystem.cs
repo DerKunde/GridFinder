@@ -1,16 +1,19 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace GridFinder.Spawner
 {
     /// <summary>
     /// Consumes SpawnCommand buffer and instantiates entities.
+    /// Resolves prefabs via PrefabRegistry using ContentId.
     /// </summary>
     [BurstCompile]
     public partial struct SpawnSystem : ISystem
     {
         private EntityQuery _queueQuery;
+        private EntityQuery _registryQuery;
 
         public void OnCreate(ref SystemState state)
         {
@@ -19,8 +22,13 @@ namespace GridFinder.Spawner
                 ComponentType.ReadWrite<SpawnCommandBufferElement>()
             );
 
+            _registryQuery = state.GetEntityQuery(
+                ComponentType.ReadOnly<PrefabRegistryTag>(),
+                ComponentType.ReadOnly<PrefabRegistryEntry>()
+            );
+
             state.RequireForUpdate(_queueQuery);
-            state.RequireForUpdate<AgentPrefabSingleton>();
+            state.RequireForUpdate(_registryQuery);
         }
 
         public void OnUpdate(ref SystemState state)
@@ -31,23 +39,30 @@ namespace GridFinder.Spawner
             if (buffer.IsEmpty)
                 return;
 
-            var prefab = SystemAPI.GetSingleton<AgentPrefabSingleton>().Prefab;
-
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
             for (int i = 0; i < buffer.Length; i++)
             {
                 var cmd = buffer[i].Value;
 
+                var prefab = FindPrefab(state.EntityManager, cmd.ContentId);
+                Debug.Log($"[SpawnSystem] ContentID: {cmd.ContentId}");
+                if (prefab == Entity.Null)
+                {
+                    Debug.LogWarning($"[SpawnSystem] No prefab found for ContentId {cmd.ContentId}. Skipping spawn.");
+                    continue;
+                }
+
+                var prefabScale = state.EntityManager.GetComponentData<LocalTransform>(prefab).Scale;
+
                 var spawned = ecb.Instantiate(prefab);
 
                 ecb.SetComponent(spawned, LocalTransform.FromPositionRotationScale(
                     cmd.WorldPos,
                     cmd.WorldRot,
-                    0.1f
+                    prefabScale
                 ));
 
-                // Optional metadata
                 ecb.AddComponent(spawned, new SpawnedContentId { Value = cmd.ContentId });
                 ecb.AddComponent(spawned, new GridCellIndex { Value = cmd.GridCellIndex });
                 ecb.AddComponent(spawned, new SpawnRequestId { Value = cmd.RequestId });
@@ -55,6 +70,18 @@ namespace GridFinder.Spawner
 
             buffer.Clear();
             ecb.Playback(state.EntityManager);
+        }
+
+        private Entity FindPrefab(EntityManager em, int id)
+        {
+            var registryEntity = _registryQuery.GetSingletonEntity();
+            var entries = em.GetBuffer<PrefabRegistryEntry>(registryEntity);
+
+            for (int i = 0; i < entries.Length; i++)
+                if (entries[i].Id == id)
+                    return entries[i].Prefab;
+
+            return Entity.Null;
         }
     }
 }
